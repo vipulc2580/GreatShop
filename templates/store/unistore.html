@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="store-header py-4">
+  <div class="container">
+    <h2 class="store-title">Our Store</h2>
+  </div>
+</section>
+
+<section class="store-section py-5">
+  <div class="container">
+    <!-- Mobile Filter Button -->
+    <div class="d-lg-none text-end mb-3">
+      <button class="btn-filter-toggle" data-bs-toggle="offcanvas" data-bs-target="#filterSidebar">
+        <i class="fas fa-sliders-h me-2"></i>Filters
+      </button>
+    </div>
+
+    <div class="row gx-4">
+      <!-- Sidebar Filters Desktop -->
+      <aside class="col-lg-3 d-none d-lg-block">
+        <div class="filter-box">
+          <div class="filter-group">
+            <h5 class="filter-title">Categories</h5>
+            <ul class="filter-list">
+              <li><a href="{% url 'store' %}">All Products</a></li>
+              {% for category in categories %}
+              <li><a href="{{ category.get_url }}">{{ category.name }}</a></li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <div class="filter-group">
+            <h5 class="filter-title">Sizes</h5>
+            <div class="filter-options">
+              <label><input type="checkbox"> XS</label>
+              <label><input type="checkbox"> SM</label>
+              <label><input type="checkbox"> LG</label>
+              <label><input type="checkbox"> XXL</label>
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <h5 class="filter-title">Price Range</h5>
+            <div class="filter-range">
+              <select>
+                <option>$0</option>
+                <option>$50</option>
+                <option>$100</option>
+                <option>$200</option>
+              </select>
+              <select>
+                <option>$50</option>
+                <option>$150</option>
+                <option>$500</option>
+                <option>$1000+</option>
+              </select>
+              <button class="btn-apply-range mt-2">Apply</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Product Grid -->
+      <main class="col-lg-9">
+        <div class="result-count mb-4">
+          <span>{{ product_count }} Items Found</span>
+        </div>
+
+        <div class="row g-4">
+          {% for product in products %}
+          <div class="col-6 col-md-4 col-xl-3">
+            <div class="product-card">
+              <div class="product-image">
+                <a href="{{product.get_url}}"><img src="{{ product.image.url }}" alt="{{ product.product_name }}"></a>
+              </div>
+              <div class="product-info">
+                <a href="{{product.get_url}}" class="custom-link">{{product.product_name}}</a>
+                <div class="product-prices">
+                  <span class="new-price">{{ product.price }}</span>
+                  <span class="old-price">{{ product.price }}</span>
+                </div>
+                <a href="#" class="btn-add-cart">Add to Cart</a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-wrapper mt-5">
+          <ul class="custom-pagination">
+            <li class="disabled"><a href="#">Previous</a></li>
+            <li class="active"><a href="#">1</a></li>
+            <li><a href="#">2</a></li>
+            <li><a href="#">Next</a></li>
+          </ul>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- Offcanvas Filter for Mobile -->
+<div class="offcanvas offcanvas-start" id="filterSidebar">
+  <div class="offcanvas-header">
+    <h5>Filter Products</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <!-- Repeat sidebar filters here (same HTML as above) -->
+    <div class="filter-box">
+        <div class="filter-group">
+          <h5 class="filter-title">Categories</h5>
+          <ul class="filter-list">
+            <li><a href="{% url 'store' %}">All Products</a></li>
+            {% for category in categories %}
+            <li><a href="{{ category.get_url }}">{{ category.name }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="filter-group">
+          <h5 class="filter-title">Sizes</h5>
+          <div class="filter-options">
+            <label><input type="checkbox"> XS</label>
+            <label><input type="checkbox"> SM</label>
+            <label><input type="checkbox"> LG</label>
+            <label><input type="checkbox"> XXL</label>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h5 class="filter-title">Price Range</h5>
+          <div class="filter-range">
+            <select>
+              <option>$0</option>
+              <option>$50</option>
+              <option>$100</option>
+              <option>$200</option>
+            </select>
+            <select>
+              <option>$50</option>
+              <option>$150</option>
+              <option>$500</option>
+              <option>$1000+</option>
+            </select>
+            <button class="btn-apply-range mt-2">Apply</button>
+          </div>
+        </div>
+      </div>
+  </div>
+</div>
+{% endblock content %}
