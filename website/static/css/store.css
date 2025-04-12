@@ -347,7 +347,39 @@
   color: #aaa;
 }
 
+.btn-added-cart {
+  display: inline-block;
+  background-color: #079f41;
+  color: white;
+  padding: 12px 28px;
+  border-radius: 30px;
+  font-weight: 500;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+}
+.btn-added-cart:hover{
+  background-color: #088d30;
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(33, 119, 248, 0.5);
+  color:white !important;
+}
+.cart-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
+
+
+@media (min-width: 768px) {
+  .cart-actions {
+    flex-direction: row;
+    text-align: center;
+  }
+  
+}
 
   /* Custom navbar css */
   /* Custom Navbar Styling */
@@ -372,5 +404,100 @@
 @media (max-width: 991px) {
   .custom-navbar form {
     display: none;
+  }
+}
+
+
+
+.custom-btn {
+  display: inline-block; /* Instead of block or flex */
+  width: auto;            /* Allow the width to be based on text */
+  padding: 10px 20px;
+  border-radius: 12px;
+  background:#0d6efd ;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.custom-btn:hover {
+  background: #135bc8;
+  box-shadow: 0 6px 18px rgba(0, 123, 255, 0.5);
+  transform: translateY(-2px);
+  color:white !important;
+}
+
+.custom-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 3px 10px rgba(0, 123, 255, 0.4);
+}
+
+
+
+
+/* Custom cart styling */
+.empty-cart-message {
+  font-size: 1.75rem;
+  color: #777;
+}
+
+.custom-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 25px;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.custom-btn:hover {
+  background-color: #0056b3;
+  color: white;
+}
+.img-sm {
+  width: 80px;
+  height: auto;
+}
+
+.cart-item-card {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  margin-bottom: 20px;
+  padding: 15px;
+}
+
+.cart-price .price {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.cart-buttons .btn {
+  border-radius: 5px;
+}
+
+.cart-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.cart-controls input[type="text"] {
+  width: 50px;
+  text-align: center;
+  border-radius: 5px;
+}
+
+@media (max-width: 768px) {
+  .cart-controls {
+      flex-direction: column;
+  }
+}
+@media (min-width: 768px) {
+  .col-md-8 {
+      flex: 0 0 auto;
+      width: 100%;
   }
 }

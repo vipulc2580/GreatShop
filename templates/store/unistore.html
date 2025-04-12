@@ -2,7 +2,11 @@
 {% block content %}
 <section class="store-header py-4">
   <div class="container">
+    {% if 'search' in request.path %}
+    <h2 class="store-title">Search Result</h2>
+    {% else %}
     <h2 class="store-title">Our Store</h2>
+    {% endif %}
   </div>
 </section>
 
@@ -67,6 +71,7 @@
         </div>
 
         <div class="row g-4">
+          {% if products %}
           {% for product in products %}
           <div class="col-6 col-md-4 col-xl-3">
             <div class="product-card">
@@ -79,22 +84,68 @@
                   <span class="new-price">{{ product.price }}</span>
                   <span class="old-price">{{ product.price }}</span>
                 </div>
-                <a href="#" class="btn-add-cart">Add to Cart</a>
+                <a href="{{product.get_url}}" class="btn-add-cart">View Details</a>
               </div>
             </div>
           </div>
           {% endfor %}
+          {% else %}
+            <div>
+              <h2 class="text-center">No Products Found,Please Try Again</h2>
+            </div>
+          {% endif %}
         </div>
 
         <!-- Pagination -->
+        {% if keyword %}
         <div class="pagination-wrapper mt-5">
+          {% if products.has_other_pages %}
           <ul class="custom-pagination">
+            {% if products.has_previous %}
+            <li><a href="?keyword={{keyword}}&page={{products.previous_page_number}}">Previous</a></li>
+            {% else %}
             <li class="disabled"><a href="#">Previous</a></li>
-            <li class="active"><a href="#">1</a></li>
-            <li><a href="#">2</a></li>
-            <li><a href="#">Next</a></li>
+            {% endif %}
+            {% for i in products.paginator.page_range %}
+              {% if products.number == i %}
+            <li class="active"><a href="?keyword={{keyword}}&page={{i}}">{{i}}</a></li>
+            {% else %}
+            <li><a href="?keyword={{keyword}}&page={{i}}">{{i}}</a></li>
+            {% endif %}
+            {% endfor %}
+            {% if products.has_next %}
+            <li><a href="?keyword={{keyword}}&page={{products.next_page_number}}">Next</a></li>
+            {% else %}
+            <li class="disabled"><a href="#">Next</a></li>
+            {% endif %}
           </ul>
+          {% endif %}
         </div>
+        {% else %}
+        <div class="pagination-wrapper mt-5">
+          {% if products.has_other_pages %}
+          <ul class="custom-pagination">
+            {% if products.has_previous %}
+            <li><a href="?page={{products.previous_page_number}}">Previous</a></li>
+            {% else %}
+            <li class="disabled"><a href="#">Previous</a></li>
+            {% endif %}
+            {% for i in products.paginator.page_range %}
+              {% if products.number == i %}
+            <li class="active"><a href="?page={{i}}">{{i}}</a></li>
+            {% else %}
+            <li><a href="?page={{i}}">{{i}}</a></li>
+            {% endif %}
+            {% endfor %}
+            {% if products.has_next %}
+            <li><a href="?page={{products.next_page_number}}">Next</a></li>
+            {% else %}
+            <li class="disabled"><a href="#">Next</a></li>
+            {% endif %}
+          </ul>
+          {% endif %}
+        </div>
+        {% endif %}
       </main>
     </div>
   </div>

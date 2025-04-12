@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{% load mathfilters %}
+<section class="section-content padding-y bg">
+    <div class="container">
+        <!-- Empty Cart -->
+       <div class="row justify-content-center align-items-center text-center" id="empty-cart" style="display: none;">
+            <div class="col-md-12">
+                <h2 class="py-5">Your Shopping Cart is Empty</h2>
+                <a href="{% url 'store' %}" class="custom-btn d-inline-block">Continue Shopping</a>
+            </div>
+        </div>
+
+        {% if cart_items %}
+        <div class="row" id='cart-table'>
+            <!-- Left Section -->
+            <aside class="col-lg-9 mb-4">
+                <div class="card shadow-sm">
+                    <div class="table-responsive">
+                        <table class="table table-borderless table-shopping-cart mb-0">
+                            <thead class="text-muted">
+                                <tr class="small text-uppercase">
+                                    <th scope="col">Product</th>
+                                    <th scope="col" width="120">Quantity</th>
+                                    <th scope="col" width="120">Price</th>
+                                    <th scope="col" class="text-right" width="200"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in cart_items %}
+                                <tr class="item-{{item.id}}">
+                                    <td>
+                                        <figure class="itemside d-flex align-items-center">
+                                            <div class="aside me-3"><img src="{{item.product.image.url}}" class="img-sm"></div>
+                                            <figcaption class="info">
+                                                <a href="{{item.product.get_url}}" class="title text-dark fw-bold">{{item.product.product_name}}</a>
+                                                <p class="text-muted small mb-0">
+                                                    {% for variation in item.variations.all %}
+                                                        {{ variation.variation_category|capfirst }} : {{ variation.variation_value|capfirst }}<br>
+                                                    {% endfor %}
+                                                </p>
+                                            </figcaption>
+                                        </figure>
+                                    </td>
+                                    <td>
+                                        <div class="cart-controls">
+                                            <a href="#" onclick="decrementCartItem({{item.id}})" class="btn btn-outline-secondary btn-sm">
+                                                <i class="fa fa-minus"></i>
+                                            </a>
+                                            <input type="text" class="form-control" id="item-{{item.id}}" value="{{item.quantity}}">
+                                            <a href="#" onclick="incrementCartItem({{item.id}})" class="btn btn-outline-secondary btn-sm">
+                                                <i class="fa fa-plus"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="price-wrap">
+                                            <var class="price">{{item.sub_total}}</var><br>
+                                            <small class="text-muted">{{item.product.price}}</small>
+                                        </div>
+                                    </td>
+                                    <td class="text-right">
+                                        <a href="#" onclick="removeCartItem({{item.id}})" class="btn btn-sm btn-danger">Remove</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Right Section -->
+            <aside class="col-lg-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <dl class="dlist-align">
+                            <dt>Total price:</dt>
+                            <dd class="text-right">{{total}}</dd>
+                        </dl>
+                        <dl class="dlist-align">
+                            <dt>Tax:</dt>
+                            <dd class="text-right">{{tax}}</dd>
+                        </dl>
+                        <dl class="dlist-align">
+                            <dt>Total:</dt>
+                            <dd class="text-right text-dark fw-bold"><strong>{{grand_total}}</strong></dd>
+                        </dl>
+                        <hr>
+                        <div class="text-center mb-3">
+                            <img src="{% static './images/misc/payments.png' %}" height="26" alt="Payment Methods">
+                        </div>
+                        <a href="./place-order.html" class="btn btn-primary btn-block mb-2">Checkout</a>
+                        <a href="{% url 'store' %}" class="btn btn-light btn-block">Continue Shopping</a>
+                    </div>
+                </div>
+            </aside>
+        </div>
+        {% else %}
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center py-5">
+                <h2 class="empty-cart-message mb-4">Your Shopping Cart is Empty</h2>
+                <a href="{% url 'store' %}" class="custom-btn">Continue Shopping</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+    <script>
+        function updateCartCounter(val){
+            let cart_counter=document.querySelector('#cart-counter');
+            let current_qty=Number(cart_counter.innerHTML);
+            current_qty+=val;
+            cart_counter.innerHTML=current_qty;
+        }
+        function incrementCartItem(itemId) {
+            const url="{%url 'increment_cart_item'%}"
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                   'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ item_id: itemId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status=='Success') {
+                    let qty=document.getElementById('item-'+itemId);
+                    qty.value=data.current_quantity;
+                    updateCartCounter(1);
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        },
+                        text: data.message || 'The item was successfully added to your cart.',
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        position:"top-end",
+                        text: data.message || 'Something went wrong.',
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    position:"top-end",
+                    text: 'Please try again later.',
+                });
+                console.error('Error:', error);
+            });
+        }
+
+        function decrementCartItem(itemId){
+            const url="{%url 'decrement_cart_item'%}"
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                   'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ item_id: itemId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status=='Success') {
+                    if(data.current_quantity==0){
+                        let item=document.querySelector('.item-'+itemId);
+                        item.remove();
+                        updateCartCounter(-data.remove_quantity);
+                    }
+                    else{
+                        let qty=document.getElementById('item-'+itemId);
+                        qty.value=data.current_quantity;
+                        updateCartCounter(-1);
+                    }
+                    
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        },
+                        text: data.message || 'The item was successfully added to your cart.',
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        position:"top-end",
+                        text: data.message || 'Something went wrong.',
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    position:"top-end",
+                    text: 'Please try again later.',
+                });
+                console.error('Error:', error);
+            });
+        }
+
+
+        function removeCartItem(itemId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to remove this item from your cart?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, remove it!',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const url = "{% url 'remove_cart_item' %}";
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCSRFToken(),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ item_id: itemId })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status == 'Success') {
+                            let item = document.querySelector('.item-' + itemId);
+                            item.remove();
+                            updateCartCounter(-data.remove_quantity);
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'success',
+                                showConfirmButton: false,
+                                timer: 2000,
+                                timerProgressBar: true,
+                                didOpen: (toast) => {
+                                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                                },
+                                text: data.message || 'Item removed from cart.',
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops!',
+                                position: 'top-end',
+                                text: data.message || 'Something went wrong.',
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Network Error',
+                            position: 'top-end',
+                            text: 'Please try again later.',
+                        });
+                        console.error('Error:', error);
+                    });
+                }
+            });
+        }
+        
+        // Helper to get CSRF token from cookie (for Django or similar frameworks)
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                let c = cookies[i].trim();
+                if (c.startsWith(name + '=')) {
+                    return c.substring(name.length + 1);
+                }
+            }
+            return '';
+        }        
+
+        const target=document.querySelector('#cart-counter');
+        {% comment %} console.log(target); {% endcomment %}
+        const observer = new MutationObserver(function(mutationsList) {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'childList') {
+                    const count = parseInt(target.textContent);
+                    if (count === 0) {
+                        
+                        document.getElementById("empty-cart").style.display = "block";
+                        document.getElementById('cart-table').style.display='none';
+                    }
+                }
+            }
+        });
+
+        observer.observe(target, { childList: true });
+    </script>
+{% endblock content %}

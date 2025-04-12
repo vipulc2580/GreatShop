@@ -16,8 +16,8 @@
       <!-- Desktop menu -->
       <div class="collapse navbar-collapse" id="navbarContent">
         <!-- Search bar -->
-        <form class="d-flex mx-auto w-50" role="search">
-          <input class="form-control me-2" type="search" placeholder="Search products..." aria-label="Search">
+        <form class="d-flex mx-auto w-50" action="{% url 'search'%}" method="GET" role="search">
+          <input class="form-control me-2" type="search" placeholder="Search products..." aria-label="Search" name="keyword">
           <button class="btn btn-outline-primary" type="submit">Search</button>
         </form>
 
@@ -27,9 +27,9 @@
             <a class="nav-link text-dark" href="#"><i class="fas fa-user me-1"></i>Sign In</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link position-relative text-dark" href="#">
+            <a class="nav-link position-relative text-dark" href="{%url 'cart'%}">
               <i class="fas fa-shopping-cart"></i>
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id='cart-counter'>{{cart_count}}</span>
             </a>
           </li>
         </ul>

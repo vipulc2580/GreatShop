@@ -1,67 +1,123 @@
-{% extends "base.html" %}
-{% load static %}
-{% block content %}
-<section class="product-section">
-  <div class="container">
-    <div class="row align-items-center gx-5 gy-5">
-      <div class="col-lg-6">
-        <div class="product-image-box">
-          <img src="{{ product.image.url }}" alt="{{ product.product_name }}" class="img-fluid product-main-img">
+  {% extends "base.html" %}
+  {% load static %}
+  {% block content %}
+  <section class="product-section">
+    <div class="container">
+      <div class="row align-items-center gx-5 gy-5">
+        <div class="col-lg-6">
+          <div class="product-image-box">
+            <img src="{{ product.image.url }}" alt="{{ product.product_name }}" class="img-fluid product-main-img">
+          </div>
         </div>
-      </div>
-      <div class="col-lg-6">
-        <div class="product-info-box">
-          <h2 class="product-title">{{ product.product_name }}</h2>
-          <p class="product-price">₹{{ product.price }}</p>
-          <p class="product-description">{{ product.description }}</p>
-
-          <div class="custom-options my-4">
-            <div class="mb-3">
-              <label class="option-label">Color</label>
-              <div class="option-buttons">
-                <button class="option-btn">Silver</button>
-                <button class="option-btn">Gray</button>
-                <button class="option-btn">Gold</button>
-                <button class="option-btn">Black</button>
+        <div class="col-lg-6">
+          <div class="product-info-box">
+            <h2 class="product-title">{{ product.product_name }}</h2>
+            <p class="product-price">₹{{ product.price }}</p>
+            <p class="product-description">{{ product.description }}</p>
+        
+            <form method="POST" action="{% url 'add_cart' product.id %}" id='product-form'>
+              {% csrf_token %}
+        
+              <div class="custom-options my-4">
+                <!-- Color Selection -->
+                <div class="mb-3">
+                  <label class="option-label">Color</label>
+                  <div class="option-buttons">
+                    <!-- Silver -->
+                     {% for color in color_variation  %}
+                      <input type="radio" class="btn-check" name="color" id="color-{{color}}" value="{{color|lower}}" autocomplete="off" required>
+                      <label class="btn btn-outline-primary me-2" for="color-{{color}}">{{color|capfirst}}</label>
+                      {% endfor %}
+                      <small class="text-danger d-none" id="color-error">Please select a color.</small>
+                  </div>
+                </div>
+        
+                <!-- Size Selection -->
+                <div>
+                  <label class="option-label">Size</label>
+                  <div class="option-buttons">
+                    {% for size in size_variation %}
+                    <input type="radio" class="btn-check" name="size" id="size-{{size}}" value="{{size|lower}}" autocomplete="off">
+                    <label class="btn btn-outline-secondary me-2" for="size-{{size}}">{{size|capfirst}}</label>
+                    {% endfor %}
+                    <small class="text-danger d-none" id="size-error">Please select a size.</small>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div>
-              <label class="option-label">Size</label>
-              <div class="option-buttons">
-                <button class="option-btn">S</button>
-                <button class="option-btn">M</button>
-                <button class="option-btn">L</button>
-                <button class="option-btn">XL</button>
-              </div>
-            </div>
+        
+              {% if product.stock <= 0 %}
+                <h5 class="text-danger">Out of Stock</h5>
+              {% else %}
+                  <button type="submit" class="btn-buy-now">Add to Cart <i class="fas fa-shopping-cart ms-2"></i></button>
+              {% endif %}
+            </form>
           </div>
-          {% if product.stock <= 0 %}
-           <h5 class="text-danger">Out of Stock</h5>
-          {% else %}
-          <a href="#" class="btn-buy-now">Add to Cart <i class="fas fa-shopping-cart ms-2"></i></a>
-          {% endif %}
         </div>
+        
       </div>
-    </div>
 
-    <div class="row mt-5">
-      <div class="col-lg-10 mx-auto">
-        <h4 class="review-heading">Customer Reviews</h4>
-        <div class="review-card">
-          <div class="review-avatar">
-            <img src="{% static './images/avatars/avatar1.jpg' %}" class="rounded-circle" width="50">
-          </div>
-          <div class="review-content">
-            <h6 class="review-author">Mike John <span class="review-date">24.04.2020</span></h6>
-            <p>
-              Dummy comment Lorem ipsum dolor sit amet, consectetur adipisicing elit,
-              sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </p>
+      <div class="row mt-5">
+        <div class="col-lg-10 mx-auto">
+          <h4 class="review-heading">Customer Reviews</h4>
+          <div class="review-card">
+            <div class="review-avatar">
+              <img src="{% static './images/avatars/avatar1.jpg' %}" class="rounded-circle" width="50">
+            </div>
+            <div class="review-content">
+              <h6 class="review-author">Mike John <span class="review-date">24.04.2020</span></h6>
+              <p>
+                Dummy comment Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+                sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              </p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-  </div>
-</section>
-{% endblock %}
+    </div>
+  </section>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const form = document.getElementById('product-form');
+      const colorRadios = document.querySelectorAll("input[name='color']");
+      const sizeRadios = document.querySelectorAll("input[name='size']");
+      const colorError = document.getElementById("color-error");
+      const sizeError = document.getElementById("size-error");
+      console.log(form);
+      console.log(sizeRadios);
+      console.log(colorRadios);
+      console.log(colorError);
+      console.log(sizeError);
+
+  
+      function isSelected(radioGroup) {
+        return [...radioGroup].some(r => r.checked);
+      }
+  
+      function hideErrors() {
+        if (isSelected(colorRadios)) colorError.classList.add("d-none");
+        if (isSelected(sizeRadios)) sizeError.classList.add("d-none");
+      }
+  
+      colorRadios.forEach(r => r.addEventListener("change", hideErrors));
+      sizeRadios.forEach(r => r.addEventListener("change", hideErrors));
+  
+      form.addEventListener("submit", function (e) {
+        let valid = true;
+  
+        if (!isSelected(colorRadios)) {
+          colorError.classList.remove("d-none");
+          valid = false;
+        }
+        if (!isSelected(sizeRadios)) {
+          sizeError.classList.remove("d-none");
+          valid = false;
+        }
+  
+        if (!valid) {
+          e.preventDefault();
+        }
+      });
+    });
+  </script>
+  {% endblock %}
