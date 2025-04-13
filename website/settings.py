@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
+
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8!!!px029gfr-4vdmy4u1+m%+*h$_$wnf^xmac_^bd9q-j&b$r'
+SECRET_KEY = config('secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -133,3 +136,25 @@ MEDIA_ROOT= BASE_DIR /'media'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+from django.contrib.messages import constants as messages
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'secondary',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',  # <- corrected typo (was 'warnings')
+    messages.ERROR: 'danger',
+}
+# email configuration
+EMAIL_HOST=config('email_host')
+EMAIL_PORT=config('email_port',cast=int)
+EMAIL_HOST_USER=config('email_user')
+EMAIL_HOST_PASSWORD=config('email_passkey')
+EMAIL_USE_TLS=True 
+DEFAULT_FROM_EMAIL=config('default_from_email')
+
+
+
+PASSWORD_RESET_TIMEOUT = 900

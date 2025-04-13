@@ -42,6 +42,10 @@
 // jquery ready start
 $(document).ready(function() {
 	// jQuery code
+    setTimeout(function() {
+        let alert=$('#alert-message');
+        alert.remove();
+      }, 2000);
 
 }); 
 // jquery end
@@ -55,7 +59,7 @@ $(document).ready(function() {
 {% block content %}
 {% endblock content %}
 
-
+{% include "includes/alerts.html" %}
 <!--footer-->
 {% include "includes/footer.html" %}
 

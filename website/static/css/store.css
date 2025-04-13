@@ -401,6 +401,78 @@
   border-radius: 6px;
 }
 
+/* Add this to your custom CSS if needed */
+.custom-navbar .nav-link:hover {
+  color: #0d6efd !important;
+  font-weight: 500;
+}
+
+/* custom-navbar.css */
+.small-btn {
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+}
+
+.navbar-nav .nav-link {
+  font-size: 0.95rem;
+}
+
+@media (max-width: 991.98px) {
+  .offcanvas .nav-link {
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+  }
+  .offcanvas .dropdown-menu {
+    margin-left: 1rem;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+
+  .navbar .btn,
+  .navbar .form-control {
+    font-size: 0.9rem;
+  }
+}
+.dropdown-menu-center {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  min-width: 220px;
+}
+
+/* Modern dropdown item style */
+.custom-dropdown-item {
+  color: #212529;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  transition: background-color 0.2s ease;
+  border-radius: 5px;
+  font-size: 0.95rem;
+}
+
+/* Hover effect */
+.custom-dropdown-item:hover,
+.custom-dropdown-item:focus {
+  background-color: #f8f9fa;
+  color: #000;
+}
+
+/* Optional: remove outline on click */
+.custom-dropdown-item:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Desktop specific: slightly larger dropdown */
+@media (min-width: 992px) {
+  .dropdown-menu-center {
+    min-width: 240px;
+  }
+}
+
 @media (max-width: 991px) {
   .custom-navbar form {
     display: none;
@@ -500,4 +572,18 @@
       flex: 0 0 auto;
       width: 100%;
   }
+}
+
+
+/* Subtle improvement for input focus */
+.form-control:focus {
+  box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.25);
+  border-color: #86b7fe;
+}
+
+.logout-btn{
+  background:rgb(235, 70, 70) !important;
+  border-radius: 5px;
+  color:white !important;
+  padding: 5px;
 }

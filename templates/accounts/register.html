@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<!-- ========================= SECTION CONTENT ========================= -->
+<section class="section-content padding-y">
+
+    <!-- ============================ COMPONENT REGISTER   ================================= -->
+    <div class="container my-5">
+      <div class="card mx-auto shadow-sm border-0" style="max-width: 540px;">
+        <article class="card-body p-4">
+          <h4 class="card-title mb-4 text-center fw-semibold">Sign Up</h4>
+    
+          <form action="{% url 'register' %}" method="POST">
+            {% csrf_token %}
+            
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="first_name" class="form-label">First Name</label>
+                {{ form.first_name}}
+              </div>
+              <div class="col-md-6">
+                <label for="last_name" class="form-label">Last Name</label>
+                {{ form.last_name}}
+              </div>
+            </div>
+    
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="email" class="form-label">Email</label>
+                {{ form.email}}
+              </div>
+              <div class="col-md-6">
+                <label for="phone_number" class="form-label">Phone Number</label>
+                {{ form.phone_number}}
+              </div>
+            </div>
+    
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="password1">Create Password</label>
+                {{ form.password1 }}
+              </div>
+              <div class="col-md-6">
+                <label for="password2">Confirm Password</label>
+                {{ form.password2 }}
+              </div>
+            </div>
+            <div class="">
+              {% if form.errors %}
+                {% for field in form %}
+                  {% for error in field.errors %}
+                    <p class="text-danger">{{ error }}</p>
+                  {% endfor %}
+                {% endfor %}
+            
+                {% if form.non_field_errors %}
+                  {% for error in form.non_field_errors %}
+                    <p class="text-danger">{{ error }}</p>
+                  {% endfor %}
+                {% endif %}
+              {% endif %}
+            </div>
+            <div class="d-grid mt-4">
+              <button type="submit" class="btn btn-primary btn-lg">Register</button>
+            </div>
+          </form>
+        </article>
+      </div>
+    
+      <p class="text-center mt-3">Already have an account?
+        <a href="{% url 'login' %}" class="text-decoration-none fw-semibold">Log In</a>
+      </p>
+    </div>
+    
+    <!-- ============================ COMPONENT REGISTER  END.// ================================= -->
+    
+    
+    </section>
+    <!-- ========================= SECTION CONTENT END// ========================= -->
+    
+
+
+{% endblock content %}
