@@ -5,10 +5,16 @@ from .models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
-from .utils import send_verification_email
+from .utils import send_notification_email
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.sites.shortcuts import get_current_site
 import uuid
+from cart.views import _cart_id
+from cart.models import Cart,CartItem
+import requests
 # Create your views here.
 def register(request):
     form=RegistrationForm()
@@ -27,9 +33,16 @@ def register(request):
             user.save()
             # messages.success(request, 'User registered and Verfication Email has been sent!')
             # send a verification email 
+            current_site = get_current_site(request)
             mail_subject='Please activate your account!'
             htmlfile='account_verification.html'
-            send_verification_email(request=request,user=user,mail_subject=mail_subject,htmlfile=htmlfile)
+            context={
+            'user': user,
+            'domain': current_site.domain,
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),  
+            'token': default_token_generator.make_token(user),
+            }
+            send_notification_email(request=request,user=user,mail_subject=mail_subject,htmlfile=htmlfile,context=context)
             return redirect(f'/accounts/login/?command=verification&email={email}')
     context={
         'form':form,
@@ -45,9 +58,82 @@ def login_view(request):
             password=form.cleaned_data['password']
             user=authenticate(request,email=email,password=password)
             if user is not None:
+                try:
+                    # print('Enter try block')
+                    # print(_cart_id(request))
+                    cart=Cart.objects.get(cart_id=_cart_id(request))
+                    # if user based cart is already present then session cart mein ko delete karo 
+                    user_cart = Cart.objects.filter(user=user).first()
+                    if user_cart:
+                        # print('found user cart')
+                        cart_items=CartItem.objects.filter(cart=cart)
+                        # find which cart item can be grouped
+                        user_cart_items=CartItem.objects.filter(cart=user_cart)
+                        # print(f'User cart item {user_cart_items}')
+                        # print(f'session cart item {cart_items}')
+                        existing_variation_sets = []
+                        ids = []
+                        for item in user_cart_items:
+                            variation_list = set(item.variations.all())
+                            existing_variation_sets.append(variation_list)  # compare as sets
+                            ids.append(item.id)
+                        # print(existing_variation_sets)
+                        # print(user_cart_items,cart_items)
+                        not_included_ids=[]
+                        item_deletes=[]
+                        for item in cart_items:
+                            current_variation=set(item.variations.all())
+                            # print(current_variation)
+                            if current_variation in existing_variation_sets:
+                                # print('variation is present')
+                                idx=existing_variation_sets.index(current_variation)
+                                # print(idx)
+                                item_qty_update=CartItem.objects.get(id=ids[idx])
+                                # print(item_qty_update.quantity)
+                                item_qty_update.quantity+=item.quantity
+                                item_qty_update.save()
+                                # print(item_qty_update.quantity)
+                                item_deletes.append(item.id)
+                            else:
+                                not_included_ids.append(item.id)
+                        # print(item_deletes,not_included_ids)
+                        for item_id in item_deletes:
+                            item=CartItem.objects.get(id=item_id)
+                            item.delete()
+                        for item_id in not_included_ids:
+                            item=CartItem.objects.get(id=item_id)
+                            item.user=user
+                            item.cart=user_cart
+                            item.save()
+
+                        # cart.delete()
+                    # print('Cart found')
+                    else:
+                        cart.user=user
+                        cart.save()
+                    # print('user assigned')
+                        cart_items=CartItem.objects.filter(cart=cart)
+                        # print(cart_items)
+                        if cart_items:
+                            for item in cart_items:
+                                item.user=user
+                                item.save()
+                            # print('User ASsigned to Cart Items')
+                except Exception as e:
+                    pass
+                    # print('entered except block')
                 login(request,user)
                 messages.success(request,'Logged In Successfully!')
-                return redirect('home')
+                url=request.META.get('HTTP_REFERER')
+                try:
+                    query=requests.utils.urlparse(url).query
+                    params=dict(x.split('=') for x in query.split('&'))
+                    print(params)
+                    if 'next' in params:
+                        nextPage=params.get('next')
+                        return redirect(nextPage)
+                except:
+                    return redirect('home')
             else:
                 form.add_error(None,'Invalid Credentails')
     context={
@@ -74,7 +160,14 @@ def forgot_password(request):
                 user=User.objects.get(email__exact=email)
                 mail_subject='Please Reset your password!'
                 htmlfile='reset_password_link.html'
-                send_verification_email(request=request,user=user,mail_subject=mail_subject,htmlfile=htmlfile)
+                current_site = get_current_site(request)
+                context={
+                'user': user,
+                'domain': current_site.domain,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),  
+                'token': default_token_generator.make_token(user),
+                }
+                send_notification_email(request=request,user=user,mail_subject=mail_subject,htmlfile=htmlfile,context=context)
                 messages.success(request,'Password Reset Email has been sent!')
                 return redirect('login')
             except User.DoesNotExist:
@@ -150,4 +243,6 @@ def reset_password(request,stored_token):
 
 @login_required(login_url='login')
 def profile(request):
-    return render(request,'accounts/profile.html')
+   return render(request,'accounts/profile.html')
+
+

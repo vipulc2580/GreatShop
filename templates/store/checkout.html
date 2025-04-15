@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load static %}
+{% load mathfilters %}
+{% block content %}
+
+<section class="section-content py-5 bg-light">
+    <div class="container">
+        <div class="row g-4" id="cart-table">
+
+            <!-- Billing Address Section -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4">Billing Address</h4>
+                        <form action="{% url 'place_order' %}" method="POST">
+                            {% csrf_token %}
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">First Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="first_name" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="last_name" class="form-control" required>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Email <span class="text-danger">*</span></label>
+                                    <input type="email" name="email" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                    <input type="tel" name="phone_number" class="form-control" required>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Address Line 1 <span class="text-danger">*</span></label>
+                                    <input type="text" name="address_line_1" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Address Line 2 <small class="text-muted">(Optional)</small></label>
+                                    <input type="text" name="address_line_2" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">City <span class="text-danger">*</span></label>
+                                    <input type="text" name="city" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Pincode <span class="text-danger">*</span></label>
+                                    <input type="number" name="pincode" class="form-control" required>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">State <span class="text-danger">*</span></label>
+                                    <input type="text" name="state" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Country <span class="text-danger">*</span></label>
+                                    <input type="text" name="country" class="form-control" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label">Order Notes <small class="text-muted">(Optional)</small></label>
+                                <textarea name="order_note" rows="3" class="form-control"></textarea>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary Section -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4">Your Order</h4>
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle">
+                                <thead class="text-muted">
+                                    <tr class="small text-uppercase">
+                                        <th scope="col">Product</th>
+                                        <th scope="col">Qty</th>
+                                        <th scope="col">Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in cart_items %}
+                                    <tr class="item-{{ item.id }}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="{{ item.product.image.url }}" alt="{{ item.product.product_name }}" class="img-fluid me-2" style="width: 60px; height: 60px; object-fit: cover;">
+                                                <div>
+                                                    <a href="{{ item.product.get_url }}" class="text-dark fw-bold">{{ item.product.product_name }}</a>
+                                                    <p class="mb-0 small text-muted">
+                                                        {% for variation in item.variations.all %}
+                                                            {{ variation.variation_category|capfirst }}: {{ variation.variation_value|capfirst }}<br>
+                                                        {% endfor %}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>
+                                            <strong>{{ item.sub_total }}</strong><br>
+                                            <small class="text-muted">{{ item.product.price }}</small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <hr>
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">Place Order</button>
+                            <a href="{% url 'store' %}" class="btn btn-outline-secondary">Continue Shopping</a>
+                        </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{% endblock content %}

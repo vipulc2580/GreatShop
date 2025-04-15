@@ -1,11 +1,36 @@
 {% extends "base.html" %}
 {% load static %}
+{% block style %}
+<style>
+    @media (max-width: 767px) {
+        #cart-table .table-shopping-cart {
+            display: none;
+        }
+
+        .card-cart {
+            display: block;
+        }
+
+        .cart-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .cart-controls input {
+            max-width: 60px;
+            text-align: center;
+        }
+    }
+</style>
+
+{% endblock style %}
 {% block content %}
 {% load mathfilters %}
 <section class="section-content padding-y bg">
     <div class="container">
         <!-- Empty Cart -->
-       <div class="row justify-content-center align-items-center text-center" id="empty-cart" style="display: none;">
+        <div class="row justify-content-center align-items-center text-center" id="empty-cart" style="display: none;">
             <div class="col-md-12">
                 <h2 class="py-5">Your Shopping Cart is Empty</h2>
                 <a href="{% url 'store' %}" class="custom-btn d-inline-block">Continue Shopping</a>
@@ -13,7 +38,7 @@
         </div>
 
         {% if cart_items %}
-        <div class="row" id='cart-table'>
+        <div class="row" id="cart-table">
             <!-- Left Section -->
             <aside class="col-lg-9 mb-4">
                 <div class="card shadow-sm">
@@ -60,8 +85,10 @@
                                             <small class="text-muted">{{item.product.price}}</small>
                                         </div>
                                     </td>
-                                    <td class="text-right">
-                                        <a href="#" onclick="removeCartItem({{item.id}})" class="btn btn-sm btn-danger">Remove</a>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger" onclick="removeCartItem({{item.id}})">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -77,12 +104,17 @@
                     <div class="card-body">
                         <dl class="dlist-align">
                             <dt>Total price:</dt>
-                            <dd class="text-right">{{total}}</dd>
+                            <dd class="text-right">{{subtotal}}</dd>
                         </dl>
-                        <dl class="dlist-align">
-                            <dt>Tax:</dt>
-                            <dd class="text-right">{{tax}}</dd>
-                        </dl>
+                        {% for tax_type,value in tax_dict.items %}
+                            {% for tax_percent,amount in value.items %}
+                                <dl class="dlist-align">
+                                    <dt>{{tax_type}}:&nbsp;({{tax_percent}}%)</dt>
+                                    <dd class="text-right">{{amount}}</dd>
+                                </dl>
+                            {% endfor %}
+                        {% endfor %}
+                        
                         <dl class="dlist-align">
                             <dt>Total:</dt>
                             <dd class="text-right text-dark fw-bold"><strong>{{grand_total}}</strong></dd>
@@ -91,7 +123,7 @@
                         <div class="text-center mb-3">
                             <img src="{% static './images/misc/payments.png' %}" height="26" alt="Payment Methods">
                         </div>
-                        <a href="./place-order.html" class="btn btn-primary btn-block mb-2">Checkout</a>
+                        <a href="{% url 'checkout'%}" class="btn btn-primary btn-block mb-2">Checkout</a>
                         <a href="{% url 'store' %}" class="btn btn-light btn-block">Continue Shopping</a>
                     </div>
                 </div>
@@ -108,212 +140,219 @@
     </div>
 </section>
 
-    <script>
-        function updateCartCounter(val){
-            let cart_counter=document.querySelector('#cart-counter');
-            let current_qty=Number(cart_counter.innerHTML);
-            current_qty+=val;
-            cart_counter.innerHTML=current_qty;
+<script>
+    function updateCartCounter(val){
+        const cartCounters = document.querySelectorAll('.cart-counter');
+        console.log(cartCounters);
+        for(let i=0;i<cartCounters.length;i++){
+            let counter=cartCounters[i];
+            let current_qty = Number(counter.textContent.trim());
+            current_qty += val;
+            counter.textContent = current_qty;
         }
-        function incrementCartItem(itemId) {
-            const url="{%url 'increment_cart_item'%}"
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                   'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken(),
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({ item_id: itemId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status=='Success') {
+    }
+    function incrementCartItem(itemId) {
+        const url="{%url 'increment_cart_item'%}"
+        fetch(url, {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ item_id: itemId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status=='Success') {
+                let qty=document.getElementById('item-'+itemId);
+                qty.value=data.current_quantity;
+                updateCartCounter(1);
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    },
+                    text: data.message || 'The item was successfully added to your cart.',
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops!',
+                    position:"top-end",
+                    text: data.message || 'Something went wrong.',
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Network Error',
+                position:"top-end",
+                text: 'Please try again later.',
+            });
+            console.error('Error:', error);
+        });
+    }
+
+    function decrementCartItem(itemId){
+        const url="{%url 'decrement_cart_item'%}"
+        fetch(url, {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ item_id: itemId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status=='Success') {
+                if(data.current_quantity==0){
+                    let item=document.querySelector('.item-'+itemId);
+                    item.remove();
+                    updateCartCounter(-data.remove_quantity);
+                }
+                else{
                     let qty=document.getElementById('item-'+itemId);
                     qty.value=data.current_quantity;
-                    updateCartCounter(1);
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'success',
-                        showConfirmButton: false,
-                        timer: 2000,
-                        timerProgressBar: true,
-                        didOpen: (toast) => {
-                            toast.addEventListener('mouseenter', Swal.stopTimer)
-                            toast.addEventListener('mouseleave', Swal.resumeTimer)
-                        },
-                        text: data.message || 'The item was successfully added to your cart.',
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops!',
-                        position:"top-end",
-                        text: data.message || 'Something went wrong.',
-                    });
+                    updateCartCounter(-1);
                 }
-            })
-            .catch(error => {
+
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    },
+                    text: data.message || 'The item was successfully added to your cart.',
+                });
+            } else {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Network Error',
+                    title: 'Oops!',
                     position:"top-end",
-                    text: 'Please try again later.',
+                    text: data.message || 'Something went wrong.',
                 });
-                console.error('Error:', error);
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Network Error',
+                position:"top-end",
+                text: 'Please try again later.',
             });
-        }
+            console.error('Error:', error);
+        });
+    }
 
-        function decrementCartItem(itemId){
-            const url="{%url 'decrement_cart_item'%}"
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                   'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken(),
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({ item_id: itemId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status=='Success') {
-                    if(data.current_quantity==0){
-                        let item=document.querySelector('.item-'+itemId);
+    function removeCartItem(itemId) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Do you want to remove this item from your cart?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, remove it!',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const url = "{% url 'remove_cart_item' %}";
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken(),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ item_id: itemId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status == 'Success') {
+                        let item = document.querySelector('.item-' + itemId);
                         item.remove();
                         updateCartCounter(-data.remove_quantity);
-                    }
-                    else{
-                        let qty=document.getElementById('item-'+itemId);
-                        qty.value=data.current_quantity;
-                        updateCartCounter(-1);
-                    }
-                    
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'success',
-                        showConfirmButton: false,
-                        timer: 2000,
-                        timerProgressBar: true,
-                        didOpen: (toast) => {
-                            toast.addEventListener('mouseenter', Swal.stopTimer)
-                            toast.addEventListener('mouseleave', Swal.resumeTimer)
-                        },
-                        text: data.message || 'The item was successfully added to your cart.',
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops!',
-                        position:"top-end",
-                        text: data.message || 'Something went wrong.',
-                    });
-                }
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Network Error',
-                    position:"top-end",
-                    text: 'Please try again later.',
-                });
-                console.error('Error:', error);
-            });
-        }
-
-
-        function removeCartItem(itemId) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you want to remove this item from your cart?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, remove it!',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const url = "{% url 'remove_cart_item' %}";
-                    fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCSRFToken(),
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: JSON.stringify({ item_id: itemId })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status == 'Success') {
-                            let item = document.querySelector('.item-' + itemId);
-                            item.remove();
-                            updateCartCounter(-data.remove_quantity);
-                            Swal.fire({
-                                toast: true,
-                                position: 'top-end',
-                                icon: 'success',
-                                showConfirmButton: false,
-                                timer: 2000,
-                                timerProgressBar: true,
-                                didOpen: (toast) => {
-                                    toast.addEventListener('mouseenter', Swal.stopTimer);
-                                    toast.addEventListener('mouseleave', Swal.resumeTimer);
-                                },
-                                text: data.message || 'Item removed from cart.',
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Oops!',
-                                position: 'top-end',
-                                text: data.message || 'Something went wrong.',
-                            });
-                        }
-                    })
-                    .catch(error => {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true,
+                            didOpen: (toast) => {
+                                toast.addEventListener('mouseenter', Swal.stopTimer);
+                                toast.addEventListener('mouseleave', Swal.resumeTimer);
+                            },
+                            text: data.message || 'Item removed from cart.',
+                        });
+                    } else {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Network Error',
+                            title: 'Oops!',
                             position: 'top-end',
-                            text: 'Please try again later.',
+                            text: data.message || 'Something went wrong.',
                         });
-                        console.error('Error:', error);
-                    });
-                }
-            });
-        }
-        
-        // Helper to get CSRF token from cookie (for Django or similar frameworks)
-        function getCSRFToken() {
-            const name = 'csrftoken';
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                let c = cookies[i].trim();
-                if (c.startsWith(name + '=')) {
-                    return c.substring(name.length + 1);
-                }
-            }
-            return '';
-        }        
-
-        const target=document.querySelector('#cart-counter');
-        {% comment %} console.log(target); {% endcomment %}
-        const observer = new MutationObserver(function(mutationsList) {
-            for (const mutation of mutationsList) {
-                if (mutation.type === 'childList') {
-                    const count = parseInt(target.textContent);
-                    if (count === 0) {
-                        
-                        document.getElementById("empty-cart").style.display = "block";
-                        document.getElementById('cart-table').style.display='none';
                     }
-                }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Network Error',
+                        position: 'top-end',
+                        text: 'Please try again later.',
+                    });
+                    console.error('Error:', error);
+                });
             }
         });
+    }
 
+    // Helper to get CSRF token from cookie (for Django or similar frameworks)
+    function getCSRFToken() {
+        const name = 'csrftoken';
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            let c = cookies[i].trim();
+            if (c.startsWith(name + '=')) {
+                return c.substring(name.length + 1);
+            }
+        }
+        return '';
+    }        
+
+    const targets = document.querySelectorAll('.cart-counter');
+
+    const observer = new MutationObserver(function(mutationsList) {
+        for (const mutation of mutationsList) {
+            if (mutation.type === 'childList') {
+                const count = parseInt(mutation.target.textContent.trim());
+                if (count === 0) {
+                    document.getElementById("empty-cart").style.display = "block";
+                    document.getElementById("cart-table").style.display = "none";
+                }
+            }
+        }
+    });
+
+    // Attach observer to each .cart-counter
+    targets.forEach(target => {
         observer.observe(target, { childList: true });
-    </script>
+    });
+</script>
+
+
 {% endblock content %}

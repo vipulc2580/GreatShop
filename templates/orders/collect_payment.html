@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{% load mathfilters %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5 fw-bold">Review Your Order and Complete Payment</h2>
+        <div class="row gy-4">
+            
+            <!-- Left Section: Billing & Products -->
+            <div class="col-lg-8">
+                <!-- Billing Address -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white fw-semibold">
+                        <i class="bi bi-geo-alt-fill me-2"></i>Billing Address
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1">{{ order.full_name }}</p>
+                        <p class="mb-1">{{ order.full_address }}</p>
+                        <p class="mb-1">{{ order.city }}, {{ order.pincode }}</p>
+                        <p class="mb-1">{{ order.state }}, {{ order.country }}</p>
+                        <p class="mb-1">{{ order.email }}</p>
+                        <p class="mb-1">{{ order.phone_number }}</p>
+                        {% if order.order_note %}
+                        <p class="mb-0"><strong>Order Note:</strong> {{ order.order_note }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Product Review -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white fw-semibold">
+                        <i class="bi bi-bag-fill me-2"></i>Products in Your Order
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in cart_items %}
+                                    <tr class="item-{{ item.id }}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="{{ item.product.image.url }}" alt="{{ item.product.product_name }}" class="img-thumbnail" style="width: 70px; height: 70px; object-fit: cover;">
+                                                <div class="ms-3">
+                                                    <h6 class="mb-0 fw-semibold">
+                                                        <a href="{{ item.product.get_url }}" class="text-decoration-none text-dark">
+                                                            {{ item.product.product_name }}
+                                                        </a>
+                                                    </h6>
+                                                    <small class="text-muted">
+                                                        {% for variation in item.variations.all %}
+                                                            {{ variation.variation_category|capfirst }}: {{ variation.variation_value|capfirst }}<br>
+                                                        {% endfor %}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>
+                                            <strong>₹{{ item.sub_total }}</strong><br>
+                                            <small class="text-muted">₹{{ item.product.price }}</small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Section: Summary & Payment -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Order Summary</h5>
+                        <ul class="list-group list-group-flush mb-3">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Total Price:</span>
+                                <strong>₹{{ subtotal }}</strong>
+                            </li>
+                            {% for tax_type, value in tax_dict.items %}
+                                {% for tax_percent, amount in value.items %}
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>{{ tax_type }} ({{ tax_percent }}%)</span>
+                                        <strong>₹{{ amount }}</strong>
+                                    </li>
+                                {% endfor %}
+                            {% endfor %}
+                            <li class="list-group-item d-flex justify-content-between bg-light fw-bold">
+                                <span>Total Payable:</span>
+                                <strong>₹{{ grand_total }}</strong>
+                            </li>
+                        </ul>
+                        <div class="text-center mb-3">
+                            <img src="{% static './images/misc/payments.png' %}" height="30" alt="Payment Methods">
+                        </div>
+                        <div id="paypal-button-container"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<script>
+    const order_number = {{ order.order_number }};
+    const create_order_url = "{% url 'create_paypal_order' %}";
+    const order_complete = "{% url 'order_complete' %}";
+
+    paypal.Buttons({
+        style: {
+            color: 'blue',
+            shape: 'rect',
+            label: 'pay',
+            height: 40
+        },
+        createOrder: function (data, actions) {
+            return fetch(create_order_url, {
+                method: 'POST'
+            }).then(res => res.json()).then(orderData => orderData.id);
+        },
+        onApprove: function (data, actions) {
+            return fetch('/orders/demo/checkout/api/paypal/order/' + data.orderID + '/' + order_number + '/capture/', {
+                method: 'POST'
+            }).then(res => res.json()).then(orderData => {
+                if (orderData['status'] == 200) {
+                    const element = document.getElementById('paypal-button-container');
+                    element.innerHTML = '<h5 class="text-center"><i class="fa fa-spinner fa-spin"></i> Processing payment...</h5>';
+                    setTimeout(() => {
+                        window.location.href = order_complete + '?order_no=' + orderData['order_number'] + '&trans_id=' + orderData['transaction_id'];
+                    }, 2000);
+                }
+            });
+        }
+    }).render('#paypal-button-container');
+</script>
+{% endblock %}

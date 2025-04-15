@@ -6,7 +6,7 @@ class ProductAdmin(admin.ModelAdmin):
     prepopulated_fields={
         'slug':('product_name',)
     }
-    list_display=['product_name','slug','updated_at','category','price','is_available']
+    list_display=['product_name','stock','slug','updated_at','category','price','is_available']
     orderings=('-created_at',)
 
 

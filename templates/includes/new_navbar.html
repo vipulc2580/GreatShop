@@ -13,7 +13,7 @@
       <div class="d-lg-none d-flex align-items-center">
         <a class="position-relative me-3 text-dark" href="{% url 'cart' %}">
           <i class="fas fa-shopping-cart fs-5"></i>
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter">{{ cart_count }}</span>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-counter">{{ cart_count }}</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNav" aria-controls="offcanvasNav">
           <span class="navbar-toggler-icon"></span>
@@ -50,7 +50,7 @@
           <li class="nav-item mr-3">
             <a class="nav-link position-relative text-dark" href="{% url 'cart' %}">
               <i class="fas fa-shopping-cart"></i>
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-counter">{{ cart_count }}</span>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-counter">{{ cart_count }}</span>
             </a>
           </li>
           {% if user.is_authenticated %}

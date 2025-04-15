@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'store',
     'cart',
     'mathfilters',
+    'orders',
 ]
 
 MIDDLEWARE = [
@@ -71,6 +72,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'category.context_processors.get_categories',
                 'cart.context_processors.cart_counter',
+                'cart.context_processors.cart_amount_details',
+                'accounts.context_processors.get_paypal_client_id',
             ],
         },
     },
@@ -155,6 +158,11 @@ EMAIL_HOST_PASSWORD=config('email_passkey')
 EMAIL_USE_TLS=True 
 DEFAULT_FROM_EMAIL=config('default_from_email')
 
-
-
 PASSWORD_RESET_TIMEOUT = 900
+
+# paypal integrations
+PAYPAL_CLIENT_ID=config('paypal_client_id')
+PAYPAL_SECRET_KEY=config('paypal_secret_key')
+PAYPAL_MODE = "sandbox"
+
+SECURE_CROSS_ORIGIN_OPENER_POLICY='same-origin-allow-popups'
