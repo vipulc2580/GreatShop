@@ -1,6 +1,8 @@
 from django.db import models
 from django.urls import reverse
 from category.models import Category
+from accounts.models import User
+from django.db.models import Count,Avg
 # Create your models here.
 class Product(models.Model):
     product_name=models.CharField(max_length=200,unique=True)
@@ -20,6 +22,22 @@ class Product(models.Model):
 
     def __str__(self):
         return self.product_name
+
+    def averageRating(self):
+        review_rating=ReviewRating.objects.filter(product=self,status=True).aggregate(average=Avg('rating'))
+        avg=0
+        if review_rating.get('average') is not None:
+            avg=review_rating.get('average')
+        return avg
+
+    def reviewCount(self):
+        review_rating=ReviewRating.objects.filter(product=self,status=True).aggregate(count=Count('id'))
+        count=0
+        if review_rating.get('count') is not None:
+            count=review_rating.get('count')
+        return count
+
+
 
     def get_url(self):
         # return reverse("Product_detail", kwargs={"pk": self.pk})
@@ -56,3 +74,24 @@ class Variation(models.Model):
         return self.variation_value
     # def get_absolute_url(self):
         # return reverse("Variation_detail", kwargs={"pk": self.pk})
+
+class ReviewRating(models.Model):
+    product=models.ForeignKey(Product,on_delete=models.CASCADE)
+    user=models.ForeignKey(User, on_delete=models.CASCADE)
+    subject=models.CharField(max_length=100,blank=True)
+    review=models.TextField(max_length=500,blank=True)
+    rating=models.FloatField()
+    ip=models.CharField(max_length=20,blank=True)
+    status=models.BooleanField(default=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "ReviewRating"
+        verbose_name_plural = "ReviewRatings"
+        
+    def __str__(self):
+        return self.subject
+
+    
+        
