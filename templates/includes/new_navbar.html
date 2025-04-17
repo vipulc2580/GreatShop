@@ -87,6 +87,7 @@
     </div>
     <div class="offcanvas-body">
       <ul class="navbar-nav gap-2">
+        
         <!-- All Categories Dropdown -->
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -102,13 +103,25 @@
 
         <!-- Store -->
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'store' %}"><i class="fas fa-store me-2"></i>Store</a>
+          <a class="nav-link {% if 'store' in request.path %}bg-page{% endif %}" href="{% url 'store' %}"><i class="fas fa-store me-2"></i>Store</a>
         </li>
 
         <!-- Register -->
         {% if user.is_authenticated  %}
         <li class="nav-item">
-          <a class="nav-link bg-danger text-center py-2 px-2 text-white rounded" href="{% url 'logout'%}"></i>Logout</a>
+          <a class="nav-link {% if request.path == '/accounts/profile/' %}bg-page{% endif %}" href="{% url 'profile'%}">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'my_orders'%}" class="nav-link {% if 'my_orders' in request.path %}bg-page{% endif %}">My Orders</a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'edit_profile' %}" class="nav-link {% if 'edit_profile' in request.path %}bg-page{% endif %}">Edit Profile</a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'change_password'%}" class="nav-link {% if 'change_password' in request.path %}bg-page{% endif %}">Change Password</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link bg-primary text-center py-2 px-2 text-white rounded" href="{% url 'logout'%}"></i>Logout</a>
         </li>
         {% else %}
         <li class="nav-item">

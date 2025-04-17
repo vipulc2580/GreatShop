@@ -1,6 +1,7 @@
 from django.db import models
 from store.models import Product,Variation
 from accounts.models import User
+from django.utils import timezone
 # Create your models here.
 class Cart(models.Model):
     cart_id=models.CharField(max_length=250,blank=True)
@@ -33,3 +34,23 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"{self.product.product_name} - {self.quantity}"
+
+
+class Coupon(models.Model):
+    code=models.CharField(max_length=20)
+    discount_percent=models.PositiveIntegerField()
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    created_at=models.DateTimeField(auto_now=True)
+    expires_at=models.DateTimeField()
+    used=models.BooleanField(default=False)
+    
+    class Meta:
+        verbose_name = "Coupon"
+        verbose_name_plural = "Coupons"
+
+    def is_valid(self):
+        return not used and self.expires_at> timezone.now()
+    
+
+    def __str__(self):
+        return self.code

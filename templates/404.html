@@ -1,0 +1,72 @@
+<!-- templates/404.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f1f1f1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: #333;
+        }
+
+        p {
+            color: #555;
+            font-size: 1.1rem;
+        }
+
+        .img-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #ff7f50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 20px;
+            font-size: 1.1rem;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #ff6347;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="img-container">
+            <!-- Replace with a dog image URL or an image stored locally -->
+            <img src="{%static "images/404-error.jpg"%}" alt="404 error">
+        </div>
+        <h1>Oops! This is not a valid URL.</h1>
+        <p>Sorry, we couldn't find the page you were looking for.</p>
+        <a href="{% url 'store' %}" class="btn">Go Back to Store</a>
+    </div>
+</body>
+</html>

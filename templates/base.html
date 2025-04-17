@@ -41,12 +41,25 @@
 <!--   Paypal integration-->
 <script src="https://www.paypal.com/sdk/js?client-id={{PAYPAL_CLIENT_ID}}&currency=USD"></script>
 
+<!--custom js -->
+<script src="{% static 'js/custom.js'%}"></script>
+
+<!--   google map api-->
+{% if 'edit_profile' in request.path %}
+    <script src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_API_KEY}}&libraries=places&callback=initAutoComplete" defer></script>
+{% endif %}
+
+<!-- Include Datatables plugin script and css -->
+<link rel="stylesheet" href="//cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
+<script src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+
 <script type="text/javascript">
 /// some script
 
 // jquery ready start
 $(document).ready(function() {
 // jQuery code
+$('#myOrdersTable').DataTable();
 setTimeout(function() {
 let alert=$('#alert-message');
 alert.remove();
@@ -61,8 +74,11 @@ alert.remove();
 <!--    header-->
 {% include "includes/new_navbar.html" %}
 <!-- content-->
-{% block content %}
-{% endblock content %}
+<main class="flex-grow-1">
+    {% block content %}
+    {% endblock %}
+</main>
+
 
 {% include "includes/alerts.html" %}
 <!--footer-->

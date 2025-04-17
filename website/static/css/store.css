@@ -589,48 +589,91 @@
 }
 
 
-/* css for ratings in product page */
+/* Hide the radio buttons but keep them focusable */
 .rate > input {
-  display:none;
+  position: absolute;
+  opacity: 0;
+  pointer-events: none; /* Ensures input doesn't block clicks on labels */
 }
-.rate{
+
+.rate {
   display: inline-block;
   border: 0;
 }
-.rate > label{
-  float:right;
+
+.rate > label {
+  float: right;
+  cursor: pointer;
 }
 
-/* start showing the stars */
-.rate > label::before{
+/* Star appearance */
+.rate > label::before {
   display: inline-block;
-  font-size: 1.1rem;
+  font-size: 1.1rem; /* Adjust size as per your design */
   font-family: FontAwesome;
-  content:"\f005";
+  content: "\f005"; /* Full star */
   margin: 0;
   padding: 0.3rem 0.2rem;
   cursor: pointer;
 }
 
-/* half star */
-.rate .half::before{
-  content: "\f089";
+/* Half star (for displaying half ratings) */
+.rate .half::before {
+  content: "\f089"; /* FontAwesome half star */
   position: absolute;
   padding-right: 0;
 }
 
-/* click and hover */
-input:checked ~ label,label:hover ~ label{
-  color: #ffb503;
-}
-/* hover highlight */
-input:checked + label:hover, input:checked ~ label:hover,input:checked ~ label:hover ~ label,
-label:hover ~ input:checked ~ label{
-  color: #cc9000;
+/* Hover effect */
+input:checked ~ label,
+label:hover ~ label {
+  color: #ffb503; /* Gold color when checked or hovered */
 }
 
+/* When hovered over specific star */
+input:checked + label:hover,
+input:checked ~ label:hover,
+input:checked ~ label:hover ~ label,
+label:hover ~ input:checked ~ label {
+  color: #cc9000; /* Darker gold color */
+}
+
+/* Optionally add some size and spacing adjustments */
 .rating-star i {
-  font-size: 1rem;
+  font-size: 1 rem; /* Adjust size of the stars */
   margin-right: 2px;
   color: #ffc107; /* Bootstrap warning yellow */
 }
+
+.bg-page {
+  background-color:rgba(232, 228, 228, 0.6) !important;
+}
+
+@media (max-width: 576px) {
+  .dataTables_length, .dataTables_filter {
+    float: none !important;
+    text-align: left !important;
+    margin-bottom: 0.5rem;
+  }
+
+  .dataTables_filter {
+    margin-top: 0.5rem;
+  }
+}
+
+ul.thumb{
+  margin:0 auto;
+  padding: 0;
+  float: left;
+}
+ul.thumb li{
+  list-style: none;
+  margin: 10px;
+}
+ul.thumb li img{
+  width: 80px;
+  height: 80px;
+  border: 1px solid grey;
+}
+
+

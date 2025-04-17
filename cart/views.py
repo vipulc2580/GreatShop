@@ -5,6 +5,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 import json
 from django.contrib.auth.decorators import login_required
+from orders.models import Tax
+
 # Create your views here.
 def _cart_id(request):
     cart=None
@@ -168,13 +170,25 @@ def increment_cart_item(request):
                     cart_item=CartItem.objects.get(id=item_id)
                     cart_item.quantity+=1
                     cart_item.save()
+                    cart_amount_detail=get_cart_details(request)
+                   
+                    total=cart_amount_detail.get('grand_total')
+                    subtotal=cart_amount_detail.get('subtotal')
+                    cgst_amount=cart_amount_detail.get('cgst_amount')
+                    sgst_amount=cart_amount_detail.get('sgst_amount')
+
                     # print('Cart Item quantity increment')
+                    # print('hi')
                     status='Success'
                     message='Item Quantity updated successfully!'
                     return JsonResponse({
                     'status':status,
                     'message':message,
-                    'current_quantity':cart_item.quantity
+                    'current_quantity':cart_item.quantity,
+                    'total':total,
+                    'subtotal':subtotal,
+                    'cgst_amount':cgst_amount,
+                    'sgst_amount':sgst_amount,
                 })
                 except Exception as e:
                     pass
@@ -208,12 +222,22 @@ def decrement_cart_item(request):
                     cart_item.quantity-=1
                     if(cart_item.quantity==0): return remove_cart_item(request)
                     cart_item.save()
+                    cart_amount_detail=get_cart_details(request)
+                   
+                    total=cart_amount_detail.get('grand_total')
+                    subtotal=cart_amount_detail.get('subtotal')
+                    cgst_amount=cart_amount_detail.get('cgst_amount')
+                    sgst_amount=cart_amount_detail.get('sgst_amount')
                     status='Success'
                     message='Item Quantity updated successfully!'
                     return JsonResponse({
                     'status':status,
                     'message':message,
-                    'current_quantity':cart_item.quantity
+                    'current_quantity':cart_item.quantity,
+                    'total':total,
+                    'subtotal':subtotal,
+                    'cgst_amount':cgst_amount,
+                    'sgst_amount':sgst_amount,
                 })
                 except Exception as e:
                     pass
@@ -245,13 +269,23 @@ def remove_cart_item(request):
                     cart_item=CartItem.objects.get(id=item_id)
                     # cart_item.quantity=0
                     cart_item.delete()
+                    cart_amount_detail=get_cart_details(request)
+                   
+                    total=cart_amount_detail.get('grand_total')
+                    subtotal=cart_amount_detail.get('subtotal')
+                    cgst_amount=cart_amount_detail.get('cgst_amount')
+                    sgst_amount=cart_amount_detail.get('sgst_amount')
                     status='Success'
                     message='Item deleted successfully!'
                     return JsonResponse({
                     'status':status,
                     'message':message,
                     'current_quantity':0,
-                    'remove_quantity':cart_item.quantity
+                    'remove_quantity':cart_item.quantity,
+                    'total':total,
+                    'subtotal':subtotal,
+                    'cgst_amount':cgst_amount,
+                    'sgst_amount':sgst_amount,
                 })
                 except Exception as e:
                     pass
@@ -295,3 +329,40 @@ def checkout(request,quantity=0,total=0,cart_items=None):
         'tax':tax
     }
     return render(request,'store/checkout.html',context)
+
+
+def get_cart_details(request):
+    grand_total,subtotal,total_tax_amount=0,0,0
+    # tax_dict={}
+    cgst_amount,sgst_amount=0,0
+    try:
+        cart=Cart.objects.get(cart_id=_cart_id(request))
+        # print('cart_found')
+        cart_items=CartItem.objects.filter(cart=cart)
+        # print('cart_items found')
+        taxes=Tax.objects.all()
+        for item in cart_items:
+            subtotal+=(item.product.price*item.quantity)
+
+        for tax in taxes:
+            percent=tax.tax_percent
+            tax_type=tax.tax_type
+            # print(percent,tax_type)
+            # print("subtotal:", subtotal, type(subtotal))
+            # print("percent:", percent, type(percent))
+            tax_amount = round((float(subtotal) * (percent / 100.00)), 2)
+            # print(tax_amount,type(tax_amount))
+            total_tax_amount+=tax_amount
+            # print(tax_amount)
+            if tax_type=='CGST':
+                cgst_amount=tax_amount
+            if tax_type=='SGST':
+                sgst_amount=tax_amount
+    except:
+        pass    
+    # print(tax_dict)
+    grand_total=float(subtotal)+total_tax_amount
+    grand_total=round(grand_total,2)
+    context={'grand_total':grand_total,'subtotal':subtotal,'cgst_amount':cgst_amount,'sgst_amount':sgst_amount}
+    # print(context)
+    return context

@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('debug',cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'cart',
     'mathfilters',
     'orders',
+    'admin_honeypot',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -56,8 +58,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_session_timeout.middleware.SessionTimeoutMiddleware',
 ]
 
+SESSION_EXPIRE_SECONDS = 3600  # 1 hour
+SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
+SESSION_TIMEOUT_REDIRECT = '/accounts/login/'
 ROOT_URLCONF = 'website.urls'
 
 TEMPLATES = [
@@ -74,6 +80,7 @@ TEMPLATES = [
                 'cart.context_processors.cart_counter',
                 'cart.context_processors.cart_amount_details',
                 'accounts.context_processors.get_paypal_client_id',
+                'accounts.context_processors.get_google_api_key',
             ],
         },
     },
@@ -155,7 +162,7 @@ EMAIL_HOST=config('email_host')
 EMAIL_PORT=config('email_port',cast=int)
 EMAIL_HOST_USER=config('email_user')
 EMAIL_HOST_PASSWORD=config('email_passkey')
-EMAIL_USE_TLS=True 
+EMAIL_USE_TLS=config('email_use_tls',cast=bool)
 DEFAULT_FROM_EMAIL=config('default_from_email')
 
 PASSWORD_RESET_TIMEOUT = 900
@@ -165,4 +172,7 @@ PAYPAL_CLIENT_ID=config('paypal_client_id')
 PAYPAL_SECRET_KEY=config('paypal_secret_key')
 PAYPAL_MODE = "sandbox"
 
+
+GOOGLE_API_KEY=config('google_api_key')
+# print(GOOGLE_API_KEY)
 SECURE_CROSS_ORIGIN_OPENER_POLICY='same-origin-allow-popups'

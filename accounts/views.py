@@ -1,7 +1,7 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,get_object_or_404
 from django.http import HttpResponse
-from .forms import RegistrationForm,LoginForm,ForgotPasswordForm,ResetPasswordForm
-from .models import User
+from .forms import RegistrationForm,LoginForm,ForgotPasswordForm,ResetPasswordForm,UserForm,UserProfileForm,ChangePasswordForm
+from .models import User,UserProfile
 from django.contrib import messages
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
@@ -12,8 +12,10 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.sites.shortcuts import get_current_site
 import uuid
+import json
 from cart.views import _cart_id
 from cart.models import Cart,CartItem
+from orders.models import Order,OrderProduct
 import requests
 # Create your views here.
 def register(request):
@@ -21,7 +23,7 @@ def register(request):
     if request.method=='POST':
         form=RegistrationForm(request.POST)
         if form.is_valid():
-            # print('data is valid')
+        # print('data is valid')
             first_name=form.cleaned_data['first_name']
             last_name=form.cleaned_data['last_name']
             phone_number=form.cleaned_data['phone_number']
@@ -45,7 +47,7 @@ def register(request):
             send_notification_email(request=request,user=user,mail_subject=mail_subject,htmlfile=htmlfile,context=context)
             return redirect(f'/accounts/login/?command=verification&email={email}')
     context={
-        'form':form,
+    'form':form,
     }
     return render(request,'accounts/register.html',context)
 
@@ -179,7 +181,6 @@ def forgot_password(request):
 
 
 def activate_account(request,uidb64,token):
-    
     try:
         uid=urlsafe_base64_decode(uidb64).decode()
         user=User._default_manager.get(pk=uid)
@@ -193,7 +194,7 @@ def activate_account(request,uidb64,token):
     else:
         messages.error(request,'Invalid Verfication Link')    
     return redirect('home')
-    
+
 
 def validate_reset_password(request,uidb64,token):
     try:
@@ -210,7 +211,7 @@ def validate_reset_password(request,uidb64,token):
     else:
         messages.error(request,'Invalid Password Reset Link')
     return redirect('login')
-    
+
 def reset_password(request,stored_token):
     user_id=request.session.get('reset_user_id')
     session_token = request.session.get('reset_session_token')
@@ -243,6 +244,89 @@ def reset_password(request,stored_token):
 
 @login_required(login_url='login')
 def profile(request):
-   return render(request,'accounts/profile.html')
+    orders=Order.objects.filter(user=request.user,is_ordered=True).order_by('-created_at')
+    order_count=orders.count()
+    try:
+        user_profile = UserProfile.objects.only('profile_picture').get(user=request.user)
+    except Exception as e:
+        user_profile=None
 
+    context={
+        'order_count':order_count,
+        'user_profile':user_profile,
+    }
+    return render(request,'accounts/profile.html',context)
 
+@login_required(login_url='login')
+def my_orders(request):
+    orders=Order.objects.filter(user=request.user,is_ordered=True).order_by('-created_at')
+    context={
+        'orders':orders,
+    }
+    return render(request,'accounts/my_orders.html',context)
+
+@login_required(login_url='login')
+def edit_profile(request):
+    user_profile=get_object_or_404(UserProfile,user=request.user)
+    profile_url=None if user_profile.profile_picture=='' else user_profile.profile_picture.url
+    profile_form=UserProfileForm(instance=user_profile)
+    user_form=UserForm(instance=request.user)
+    if request.method=='POST':
+        user_form=UserForm(request.POST,instance=request.user)
+        profile_form=UserProfileForm(request.POST,request.FILES,instance=user_profile)
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request,'Profile has been updated!')
+            return redirect('edit_profile')
+    # print(user_form.fields)
+    context={
+        'user_form':user_form,
+        'profile_form':profile_form,
+        'profile_url':profile_url,
+    }
+    return render(request,'accounts/edit_profile.html',context)
+
+@login_required(login_url='login')
+def change_password(request):
+    form=ChangePasswordForm(user=request.user)
+    if request.method=='POST':
+        form=ChangePasswordForm(request.POST,user=request.user)
+        if form.is_valid():
+            user=User.objects.get(id=request.user.id)
+            new_password=form.cleaned_data['new_password']
+            user.set_password(new_password)
+            user.save()
+            login(request,user)
+            messages.success(request,'Password has been updated successfully!')
+            return redirect('profile')
+    context={
+        'form':form,
+    }
+    return render(request,'accounts/change_password.html',context)
+
+@login_required(login_url='login')
+def order_detail(request,order_id):
+    order=None 
+    subtotal=0
+    tax_data=0
+    ordered_products=None 
+    try:
+        # print(order_id)
+        order=Order.objects.get(order_number=order_id,user=request.user,is_ordered=True)
+        # print('order found')
+        ordered_products=OrderProduct.objects.filter(order=order,user=request.user,ordered=True).order_by('updated_at')
+        # print('ordered_products found')
+        tax_data=json.loads(order.tax_data)
+        for product in ordered_products:
+            subtotal+=(product.quantity*product.product_price)
+        context={
+            'order':order,
+            'ordered_products':ordered_products,
+            'subottal':subtotal,
+            'tax_data':tax_data,
+        } 
+        return render(request,'orders/order_detail.html',context)
+    except:
+        messages.error(request,'Error occured!Try again later.')
+        return redirect('profile')

@@ -3,24 +3,33 @@
 {% block style %}
 <style>
     @media (max-width: 767px) {
-        #cart-table .table-shopping-cart {
+
+        #cart-table .table {
             display: none;
         }
-
-        .card-cart {
-            display: block;
-        }
-
-        .cart-controls {
+    
+        .card-cart .cart-controls {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
+            gap: 0.5rem;
         }
-
-        .cart-controls input {
-            max-width: 60px;
-            text-align: center;
+    
+        .card-cart input[type="text"] {
+            height: 32px;
+            padding: 0;
+            font-size: 14px;
         }
+    
+        .card-cart .btn-sm {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        
     }
 </style>
 
@@ -30,7 +39,7 @@
 <section class="section-content padding-y bg">
     <div class="container">
         <!-- Empty Cart -->
-        <div class="row justify-content-center align-items-center text-center" id="empty-cart" style="display: none;">
+        <div class="row justify-content-center align-items-center text-center" id="empty-cart" style="display: none; min-height: 50vh;">
             <div class="col-md-12">
                 <h2 class="py-5">Your Shopping Cart is Empty</h2>
                 <a href="{% url 'store' %}" class="custom-btn d-inline-block">Continue Shopping</a>
@@ -54,7 +63,7 @@
                             </thead>
                             <tbody>
                                 {% for item in cart_items %}
-                                <tr class="item-{{item.id}}">
+                                <tr class="cart_item-{{item.id}}">
                                     <td>
                                         <figure class="itemside d-flex align-items-center">
                                             <div class="aside me-3"><img src="{{item.product.image.url}}" class="img-sm"></div>
@@ -73,7 +82,7 @@
                                             <a href="#" onclick="decrementCartItem({{item.id}})" class="btn btn-outline-secondary btn-sm">
                                                 <i class="fa fa-minus"></i>
                                             </a>
-                                            <input type="text" class="form-control" id="item-{{item.id}}" value="{{item.quantity}}">
+                                            <input type="text" class="form-control item-{{item.id}}" value="{{item.quantity}}">
                                             <a href="#" onclick="incrementCartItem({{item.id}})" class="btn btn-outline-secondary btn-sm">
                                                 <i class="fa fa-plus"></i>
                                             </a>
@@ -97,27 +106,83 @@
                     </div>
                 </div>
             </aside>
+            <!--Mobile View of Cart-->
+            <div class="d-block d-md-none">
+                {% for item in cart_items %}
+                <div class="card mb-3 shadow-sm border rounded-3 p-2 card-cart cart_item-{{item.id}}">
+                    <div class="d-flex">
+                        <!-- Product Image -->
+                        <div class="flex-shrink-0">
+                            <img src="{{ item.product.image.url }}" class="img-fluid rounded" style="width: 80px; height: auto;">
+                        </div>
+            
+                        <!-- Product Info -->
+                        <div class="flex-grow-1 ms-3 d-flex flex-column justify-content-between">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <!-- Product Name + Variations -->
+                                <div class="me-2">
+                                    <h6 class="fw-bold mb-1 mb-sm-0">{{ item.product.product_name }}</h6>
+                                    <p class="text-muted small mb-1">
+                                        {% for variation in item.variations.all %}
+                                            {{ variation.variation_category|capfirst }}: {{ variation.variation_value|capfirst }}<br>
+                                        {% endfor %}
+                                    </p>
+                                </div>
+                            
+                                <!-- Price -->
+                                <div class="text-end">
+                                    <div class="fw-bold">{{ item.sub_total }}</div>
+                                    <small class="text-muted">{{ item.product.price }}</small>
+                                </div>
+                            </div>
+                            
+            
+                            <!-- Quantity Controls + Trash Icon in One Line -->
+                        <div class="d-flex justify-content-between align-items-center my-2">
+                            
+                            <!-- Quantity Spinner -->
+                            <div class="d-flex align-items-center">
+                                <button onclick="decrementCartItem({{item.id}})" class="btn btn-outline-secondary btn-sm rounded-circle">
+                                    <i class="fa fa-minus"></i>
+                                </button>
+                                <input type="text" class="form-control text-center mx-2 item-{{item.id}}" value="{{item.quantity}}" style="width: 50px;">
+                                <button onclick="incrementCartItem({{item.id}})" class="btn btn-outline-secondary btn-sm rounded-circle">
+                                    <i class="fa fa-plus"></i>
+                                </button>
+                            </div>
 
+                            <!-- Delete Button -->
+                            <button class="btn btn-sm btn-danger rounded-circle ms-2" onclick="removeCartItem({{item.id}})">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+
+                            
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
             <!-- Right Section -->
             <aside class="col-lg-3">
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <dl class="dlist-align">
                             <dt>Total price:</dt>
-                            <dd class="text-right">{{subtotal}}</dd>
+                            <dd class="text-right" id='subtotal'>{{subtotal}}</dd>
                         </dl>
                         {% for tax_type,value in tax_dict.items %}
                             {% for tax_percent,amount in value.items %}
                                 <dl class="dlist-align">
                                     <dt>{{tax_type}}:&nbsp;({{tax_percent}}%)</dt>
-                                    <dd class="text-right">{{amount}}</dd>
+                                    <dd class="text-right" id="{{tax_type|lower}}">{{amount}}</dd>
                                 </dl>
                             {% endfor %}
                         {% endfor %}
                         
                         <dl class="dlist-align">
                             <dt>Total:</dt>
-                            <dd class="text-right text-dark fw-bold"><strong>{{grand_total}}</strong></dd>
+                            <dd class="text-right text-dark fw-bold"><strong id='total'>{{grand_total}}</strong></dd>
                         </dl>
                         <hr>
                         <div class="text-center mb-3">
@@ -129,11 +194,14 @@
                 </div>
             </aside>
         </div>
+        <!-- Mobile View - Card Layout -->
+        
+
         {% else %}
-        <div class="row justify-content-center">
-            <div class="col-md-8 text-center py-5">
-                <h2 class="empty-cart-message mb-4">Your Shopping Cart is Empty</h2>
-                <a href="{% url 'store' %}" class="custom-btn">Continue Shopping</a>
+        <div class="row justify-content-center align-items-center text-center" id="empty-cart" style="min-height: 50vh;">
+            <div class="col-md-12">
+                <h2 class="py-5">Your Shopping Cart is Empty</h2>
+                <a href="{% url 'store' %}" class="custom-btn d-inline-block">Continue Shopping</a>
             </div>
         </div>
         {% endif %}
@@ -165,9 +233,15 @@
         .then(response => response.json())
         .then(data => {
             if (data.status=='Success') {
-                let qty=document.getElementById('item-'+itemId);
-                qty.value=data.current_quantity;
+                let qtys=document.querySelectorAll('.item-'+itemId);
+                console.log(qtys);
+                console.log('hi');
+                for(let i=0;i<qtys.length;i++){
+                    let qty=qtys[i];
+                    qty.value=data.current_quantity;
+                }
                 updateCartCounter(1);
+                update_cart_details(data['total'],data['subtotal'],data['cgst_amount'],data['sgst_amount'])
                 Swal.fire({
                     toast: true,
                     position: 'top-end',
@@ -216,16 +290,19 @@
         .then(data => {
             if (data.status=='Success') {
                 if(data.current_quantity==0){
-                    let item=document.querySelector('.item-'+itemId);
-                    item.remove();
+                    let items=document.querySelectorAll('.cart_item-'+itemId);
+                    for(let i=0;i<items.length;i++) items[i].remove();
                     updateCartCounter(-data.remove_quantity);
                 }
                 else{
-                    let qty=document.getElementById('item-'+itemId);
-                    qty.value=data.current_quantity;
+                    let qtys=document.querySelectorAll('.item-'+itemId);
+                    for(let i=0;i<qtys.length;i++){
+                        let qty=qtys[i];
+                        qty.value=data.current_quantity;
+                    }
                     updateCartCounter(-1);
                 }
-
+                update_cart_details(data['total'],data['subtotal'],data['cgst_amount'],data['sgst_amount'])
                 Swal.fire({
                     toast: true,
                     position: 'top-end',
@@ -283,9 +360,10 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.status == 'Success') {
-                        let item = document.querySelector('.item-' + itemId);
-                        item.remove();
+                        let items = document.querySelectorAll('.cart_item-' + itemId);
+                        for(let i=0;i<items.length;i++) items[i].remove();
                         updateCartCounter(-data.remove_quantity);
+                        update_cart_details(data['total'],data['subtotal'],data['cgst_amount'],data['sgst_amount'])
                         Swal.fire({
                             toast: true,
                             position: 'top-end',
@@ -320,7 +398,25 @@
             }
         });
     }
-
+    function update_cart_details(total,subtotal,cgst_amount,sgst_amount){
+        let total_element=document.getElementById('total');
+        let subtotal_element=document.getElementById('subtotal');
+        let sgst_element=document.getElementById('sgst');
+        let cgst_element=document.getElementById('cgst');
+        
+        if(total_element){
+            total_element.innerHTML=total;
+        }
+        if(subtotal_element){
+            subtotal_element.innerHTML=subtotal;
+        }
+        if(sgst_element){
+            sgst_element.innerHTML=sgst_amount;
+        }
+        if(cgst_element){
+            cgst_element.innerHTML=cgst_amount;
+        }
+    }
     // Helper to get CSRF token from cookie (for Django or similar frameworks)
     function getCSRFToken() {
         const name = 'csrftoken';

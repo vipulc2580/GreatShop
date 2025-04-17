@@ -1,39 +1,60 @@
-  {% extends "base.html" %}
-  {% load static %}
-  {% block content %}
-  <section class="product-section">
-    <div class="container">
-      <div class="row align-items-center gx-5 gy-5">
-        <div class="col-lg-6">
-          <div class="product-image-box">
-            <img src="{{ product.image.url }}" alt="{{ product.product_name }}" class="img-fluid product-main-img">
-          </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="product-info-box">
-            <h2 class="product-title">{{ product.product_name }}</h2>
-            <div class="rating-star">
-              <span>
-                <i class="{% if product.averageRating >= 1 %}fa-solid fa-star{% elif product.averageRating >= 0.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
-                <i class="{% if product.averageRating >= 2 %}fa-solid fa-star{% elif product.averageRating >= 1.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
-                <i class="{% if product.averageRating >= 3 %}fa-solid fa-star{% elif product.averageRating >= 2.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
-                <i class="{% if product.averageRating >= 4 %}fa-solid fa-star{% elif product.averageRating >= 3.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
-                <i class="{% if product.averageRating >= 5 %}fa-solid fa-star{% elif product.averageRating >= 4.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
-              </span>
-              <span>{{ product.reviewCount }} reviews</span>
-            </div>
-            <p class="product-price">₹{{ product.price }}</p>
-            <p class="product-description">{{ product.description }}</p>
-        
-            <form method="POST" action="{% url 'add_cart' product.id %}" id='product-form'>
-              {% csrf_token %}
-        
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<section class="product-section">
+  <div class="container">
+    <div class="row align-items-center gx-5 gy-5">
+      <!-- ============================ COMPONENT 1 ================================= -->
+		<div class="card shadow">
+			<div class="row no-gutters">
+				<aside class="col-md-6">
+					<article class="gallery-wrap">
+						<div class="img-big-wrap mainImage">
+							<center><img src="{{ product.image.url }}"></center>
+						</div> <!-- img-big-wrap.// -->
+
+					</article> <!-- gallery-wrap .end// -->
+					<ul class="thumb">
+						<li>
+							<a href="{{ product.image.url }}" target="mainImage"><img src="{{ product.image.url }}" alt="Product Image"></a>
+							{% for i in product_gallery %}
+							<a href="{{i.image.url}}" target="mainImage"><img src="{{i.image.url}}" alt="Product Image"></a>
+							{% endfor %}
+						</li>
+					</ul>
+				</aside>
+				<main class="col-md-6 border-left">
+
+					
+						<article class="content-body">
+
+							<h2 class="title">{{ product.product_name }}</h2>
+							<div class="rating-star">
+								<span>
+                  <i class="{% if product.averageRating >= 1 %}fa-solid fa-star{% elif product.averageRating >= 0.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
+                  <i class="{% if product.averageRating >= 2 %}fa-solid fa-star{% elif product.averageRating >= 1.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
+                  <i class="{% if product.averageRating >= 3 %}fa-solid fa-star{% elif product.averageRating >= 2.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
+                  <i class="{% if product.averageRating >= 4 %}fa-solid fa-star{% elif product.averageRating >= 3.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
+                  <i class="{% if product.averageRating >= 5 %}fa-solid fa-star{% elif product.averageRating >= 4.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
+                
+	        <span>{{product.countReview}} reviews</span>
+									</span>
+							</div>
+
+
+							<div class="mb-3 mt-3">
+								<var class="price h4"> {{product.price}}</var>
+							</div>
+
+							<p>{{ product.description }}</p>
+              <form action="{% url 'add_cart' product.id %}" method="POST" id='product-form'>
+                {% csrf_token %}
               <div class="custom-options my-4">
-                <!-- Color Selection -->
+              
                 <div class="mb-3">
                   <label class="option-label">Color</label>
                   <div class="option-buttons">
-                    <!-- Silver -->
+                   
                      {% for color in color_variation  %}
                       <input type="radio" class="btn-check" name="color" id="color-{{color}}" value="{{color|lower}}" autocomplete="off" required>
                       <label class="btn btn-outline-primary me-2" for="color-{{color}}">{{color|capfirst}}</label>
@@ -42,7 +63,7 @@
                   </div>
                 </div>
         
-                <!-- Size Selection -->
+               
                 <div>
                   <label class="option-label">Size</label>
                   <div class="option-buttons">
@@ -54,168 +75,273 @@
                   </div>
                 </div>
               </div>
-        
-              {% if product.stock <= 0 %}
-                <h5 class="text-danger">Out of Stock</h5>
-              {% else %}
-                  <button type="submit" class="btn-buy-now">Add to Cart <i class="fas fa-shopping-cart ms-2"></i></button>
-              {% endif %}
+							
+              <div class="mt-5">
+							{% if single_product.stock <= 0 %}
+							<h5 class="text-danger">Out of Stock</h5>
+							{% else %}
+							<button type="submit" class="btn  btn-primary"> <span class="text">Add to Cart</span> <i class="fa fa-shopping-cart"></i> </button>
+							{% endif %}
             </form>
+            </div>
+						</article> <!-- product-info-aside .// -->
+					
+				</main> <!-- col.// -->
+			</div> <!-- row.// -->
+		</div> <!-- card.// -->
+		<!-- ============================ COMPONENT 1 END .// ================================= -->
+		<br>
+    <div class="row mt-5">
+      <div class="col-lg-10 mx-auto">
+        <form action="{% url 'submit_review' product.id %}" id='review-form' method='POST'>
+          {% csrf_token %}
+          <h5>Write Your Review</h5>
+          <div>
+            <!--Rating Stars-->
+            <label for="">How do you rate this product?</label>
+            <br>
+            <div class="rate">
+              <input type="radio" name='rating' id="rating10" value="5" required><label for="rating10" title="5"></label>
+              <input type="radio" name='rating' id="rating9" value="4.5" required><label for="rating9" title="4.5" class="half"></label>
+              <input type="radio" name='rating' id="rating8" value="4" required><label for="rating8" title="4"></label>
+              <input type="radio" name='rating' id="rating7" value="3.5" required><label for="rating7" title="3.5" class="half"></label>
+              <input type="radio" name='rating' id="rating6" value="3" required><label for="rating6" title="3"></label></input>
+              <input type="radio" name='rating' id="rating5" value="2.5" required><label for="rating5" title="2.5" class="half"></label></input>
+              <input type="radio" name='rating' id="rating4" value="2" required><label for="rating4" title="2"></label>
+              <input type="radio" name='rating' id="rating3" value="1.5" required><label for="rating3" title="1.5" class="half"></label></input>
+              <input type="radio" name='rating' id="rating2" value="1" required><label for="rating2" title="1"></label></input>
+              <input type="radio" name='rating' id="rating1" value="0.5" required><label for="rating1" title="0.5" class="half"></label></input>
+            </div>
+            <br>
+            <label for="">Review Title:</label>
+            <input type="text" name="subject" class="form-control">
+            <br>
+            <label for="">Review:</label>
+            <textarea name="review" row="4" id="" class="form-control"></textarea>
+            <br>
+            {% if user.is_authenticated %}
+              {% if has_purchased %}
+            <input type="submit" value="Submit Reveiw" class="btn btn-primary">
+            {% else %}
+            <p>You must purchase this product to post a review.</p>
+            {% endif %}
+            {% else %}
+            <p>You must be logged in to post a review. <span><a href="{% url 'login'%}">Log In</a></span></p>
+            {% endif %}
           </div>
+        </form>
+        <br>
+        <h4 class="review-heading">Customer Reviews</h4>
+        <div class="rating-star">
+          <span>
+            <i class="{% if product.averageRating >= 1 %}fa-solid fa-star{% elif product.averageRating >= 0.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
+            <i class="{% if product.averageRating >= 2 %}fa-solid fa-star{% elif product.averageRating >= 1.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
+            <i class="{% if product.averageRating >= 3 %}fa-solid fa-star{% elif product.averageRating >= 2.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
+            <i class="{% if product.averageRating >= 4 %}fa-solid fa-star{% elif product.averageRating >= 3.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
+            <i class="{% if product.averageRating >= 5 %}fa-solid fa-star{% elif product.averageRating >= 4.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
+          </span>
+          <span>{{ product.reviewCount }} reviews</span>
         </div>
+        <div class="container my-4">
+          {% for review in reviews %}
+          <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start flex-wrap">
+                <div class="d-flex align-items-center mb-2">
+                  <img src="{% static './images/avatars/avatar1.jpg' %}" class="rounded-circle me-2" width="50" height="50" alt="avatar">
+                  <div>
+                    <h6 class="mb-0">{{ review.user.full_name }}</h6>
+                    <div class="rating-star text-warning">
+                      <span>
+                        <i class="{% if review.rating >= 1 %}fa-solid fa-star{% elif review.rating >= 0.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
+                        <i class="{% if review.rating >= 2 %}fa-solid fa-star{% elif review.rating >= 1.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
+                        <i class="{% if review.rating >= 3 %}fa-solid fa-star{% elif review.rating >= 2.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
+                        <i class="{% if review.rating >= 4 %}fa-solid fa-star{% elif review.rating >= 3.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
+                        <i class="{% if review.rating >= 5 %}fa-solid fa-star{% elif review.rating >= 4.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="ms-auto text-end text-muted small">
+                  {{ review.updated_at|date:"d.m.Y" }}
+                </div>
+              </div>
+              <h6>{{ review.subject }}</h6>
+              <p class="mt-2 mb-0">{{ review.review }}</p>
+            </div>
+          </div>
+          {% endfor %}
         
-      </div>
-
-      <div class="row mt-5">
-        <div class="col-lg-10 mx-auto">
-          <form action="{% url 'submit_review' product.id %}" method='POST'>
-            {% csrf_token %}
-            <h5>Write Your Review</h5>
-            <div>
-              <!--Rating Stars-->
-              <label for="">How do you rate this product?</label>
-              <br>
-              <div class="rate">
-                <input type="radio" name='rating' id="rating10" value="5" required><label for="rating10" title="5"></label>
-                <input type="radio" name='rating' id="rating9" value="4.5" required><label for="rating9" title="4.5" class="half"></label>
-                <input type="radio" name='rating' id="rating8" value="4" required><label for="rating8" title="4"></label>
-                <input type="radio" name='rating' id="rating7" value="3.5" required><label for="rating7" title="3.5" class="half"></label>
-                <input type="radio" name='rating' id="rating6" value="3" required><label for="rating6" title="3"></label>
-                <input type="radio" name='rating' id="rating5" value="2.5" required><label for="rating5" title="2.5" class="half"></label>
-                <input type="radio" name='rating' id="rating4" value="2" required><label for="rating4" title="2"></label>
-                <input type="radio" name='rating' id="rating3" value="1.5" required><label for="rating3" title="1.5" class="half"></label>
-                <input type="radio" name='rating' id="rating2" value="1" required><label for="rating2" title="1"></label>
-                <input type="radio" name='rating' id="rating1" value="0.5" required><label for="rating1" title="0.5" class="half"></label>
-              </div>
-              <br>
-              <label for="">Review Title:</label>
-              <input type="text" name="subject" class="form-control">
-              <br>
-              <label for="">Review:</label>
-              <textarea name="review" row="4" id="" class="form-control"></textarea>
-              <br>
-              {% if user.is_authenticated %}
-                {% if has_purchased %}
-              <input type="submit" value="Submit Reveiw" class="btn btn-primary">
-              {% else %}
-              <p>You must purchase this product to post a review.</p>
-              {% endif %}
-              {% else %}
-              <p>You must be logged in to post a review. <span><a href="{% url 'login'%}">Log In</a></span></p>
-              {% endif %}
-            </div>
-          </form>
-          <br>
-          <h4 class="review-heading">Customer Reviews</h4>
-          <div class="rating-star">
-            <span>
-              <i class="{% if product.averageRating >= 1 %}fa-solid fa-star{% elif product.averageRating >= 0.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
-              <i class="{% if product.averageRating >= 2 %}fa-solid fa-star{% elif product.averageRating >= 1.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
-              <i class="{% if product.averageRating >= 3 %}fa-solid fa-star{% elif product.averageRating >= 2.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
-              <i class="{% if product.averageRating >= 4 %}fa-solid fa-star{% elif product.averageRating >= 3.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
-              <i class="{% if product.averageRating >= 5 %}fa-solid fa-star{% elif product.averageRating >= 4.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
-            </span>
-            <span>{{ product.reviewCount }} reviews</span>
-          </div>
-          <div class="container my-4">
-            {% for review in reviews %}
-            <div class="card mb-3 shadow-sm">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start flex-wrap">
-                  <div class="d-flex align-items-center mb-2">
-                    <img src="{% static './images/avatars/avatar1.jpg' %}" class="rounded-circle me-2" width="50" height="50" alt="avatar">
-                    <div>
-                      <h6 class="mb-0">{{ review.user.full_name }}</h6>
-                      <div class="rating-star text-warning">
-                        <span>
-                          <i class="{% if review.rating >= 1 %}fa-solid fa-star{% elif review.rating >= 0.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
-                          <i class="{% if review.rating >= 2 %}fa-solid fa-star{% elif review.rating >= 1.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
-                          <i class="{% if review.rating >= 3 %}fa-solid fa-star{% elif review.rating >= 2.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
-                          <i class="{% if review.rating >= 4 %}fa-solid fa-star{% elif review.rating >= 3.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
-                          <i class="{% if review.rating >= 5 %}fa-solid fa-star{% elif review.rating >= 4.5 %}fa-solid fa-star-half-stroke{% else %}fa-regular fa-star{% endif %}"></i>
-                        </span>
-                      </div>
+          <!-- Example static review -->
+          <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start flex-wrap">
+                <div class="d-flex align-items-center mb-2">
+                  <img src="{% static './images/avatars/avatar1.jpg' %}" class="rounded-circle me-2" width="50" height="50" alt="avatar">
+                  <div>
+                    <h6 class="mb-0">Mike John</h6>
+                    <div class="rating-star">
+                      <i class="fa-solid fa-star"></i>  
+                      <i class="fa-solid fa-star"></i>  
+                      <i class="fa-solid fa-star-half-stroke"></i>  
+                      <i class="fa-regular fa-star"></i> 
+                      <i class="fa-regular fa-star"></i>  
+                      
                     </div>
                   </div>
-                  <div class="ms-auto text-end text-muted small">
-                    {{ review.updated_at|date:"d.m.Y" }}
-                  </div>
                 </div>
-                <h6>{{ review.subject }}</h6>
-                <p class="mt-2 mb-0">{{ review.review }}</p>
-              </div>
-            </div>
-            {% endfor %}
-          
-            <!-- Example static review -->
-            <div class="card mb-3 shadow-sm">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start flex-wrap">
-                  <div class="d-flex align-items-center mb-2">
-                    <img src="{% static './images/avatars/avatar1.jpg' %}" class="rounded-circle me-2" width="50" height="50" alt="avatar">
-                    <div>
-                      <h6 class="mb-0">Mike John</h6>
-                      <div class="rating-star">
-                        <i class="fa-solid fa-star"></i>  
-                        <i class="fa-solid fa-star"></i>  
-                        <i class="fa-solid fa-star-half-stroke"></i>  
-                        <i class="fa-regular fa-star"></i> 
-                        <i class="fa-regular fa-star"></i>  
-                        
-                      </div>
-                    </div>
-                  </div>
-                  <div class="ms-auto text-end text-muted small">
-                    24.04.2020
-                  </div>
+                <div class="ms-auto text-end text-muted small">
+                  24.04.2020
                 </div>
-                <h6>Sample Subject</h6>
-                <p class="mt-2 mb-0">
-                  Dummy comment Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                </p>
               </div>
+              <h6>Sample Subject</h6>
+              <p class="mt-2 mb-0">
+                Dummy comment Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              </p>
             </div>
           </div>
         </div>
       </div>
-
     </div>
-  </section>
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const form = document.getElementById('product-form');
-      const colorRadios = document.querySelectorAll("input[name='color']");
-      const sizeRadios = document.querySelectorAll("input[name='size']");
-      const colorError = document.getElementById("color-error");
-      const sizeError = document.getElementById("size-error");
-      function isSelected(radioGroup) {
+
+  </div>
+</section>
+<script>
+ 
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById('product-form');
+    if (!form) {
+        return;
+    }
+
+    // Color & Size validation
+    const colorRadios = document.querySelectorAll("input[name='color']");
+    const sizeRadios = document.querySelectorAll("input[name='size']");
+    const colorError = document.getElementById("color-error");
+    const sizeError = document.getElementById("size-error");
+
+    function isSelected(radioGroup) {
         return [...radioGroup].some(r => r.checked);
-      }
-  
-      function hideErrors() {
+    }
+
+    function hideErrors() {
         if (isSelected(colorRadios)) colorError.classList.add("d-none");
         if (isSelected(sizeRadios)) sizeError.classList.add("d-none");
-      }
-  
-      colorRadios.forEach(r => r.addEventListener("change", hideErrors));
-      sizeRadios.forEach(r => r.addEventListener("change", hideErrors));
-  
-      form.addEventListener("submit", function (e) {
+    }
+
+    colorRadios.forEach(r => r.addEventListener("change", hideErrors));
+    sizeRadios.forEach(r => r.addEventListener("change", hideErrors));
+
+    
+
+    // Product form validation
+    form.addEventListener("submit", function (e) {
         let valid = true;
-  
+
+        // Validate color/size
         if (!isSelected(colorRadios)) {
-          colorError.classList.remove("d-none");
-          valid = false;
+            colorError.classList.remove("d-none");
+            valid = false;
         }
         if (!isSelected(sizeRadios)) {
-          sizeError.classList.remove("d-none");
-          valid = false;
+            sizeError.classList.remove("d-none");
+            valid = false;
         }
-  
+
         if (!valid) {
-          e.preventDefault();
+            e.preventDefault(); // Prevent form submission
         }
-      });
     });
-  </script>
-  {% endblock %}
+
+    // Review form validation
+    const review_form = document.getElementById('review-form');
+    if (!review_form) {
+        return;
+    }
+    review_form.addEventListener('submit', function (e) {
+      // Review form inputs
+      const ratingInputs = document.querySelectorAll("input[name='rating']");
+      const subjectInput = document.querySelector("input[name='subject']");
+      const reviewInput = document.querySelector("textarea[name='review']");
+  
+      const createErrorMessage = (field, message) => {
+          // Check if an error message already exists for this field
+          let existingError = field.nextElementSibling;
+          if (existingError && existingError.classList.contains("text-danger")) {
+              return existingError; // Return the existing error if it already exists
+          }
+          
+          // Create a new error message if not
+          const errorMessage = document.createElement("small");
+          errorMessage.classList.add("text-danger", "d-block", "mt-1");
+          errorMessage.innerText = message;
+          field.after(errorMessage);
+          return errorMessage;
+      };
+  
+      // Clear any existing error messages
+      const existingErrors = form.querySelectorAll('.text-danger');
+      existingErrors.forEach(error => error.remove());
+  
+      // Validation flags
+      let valid = true;
+  
+      // Validate rating
+      const ratingSelected = [...ratingInputs].some(r => r.checked);
+      const ratingError = !ratingSelected ? createErrorMessage(ratingInputs[0], "Please select a rating.") : null;
+  
+      // Validate subject
+      const subjectError = !subjectInput.value.trim() ? createErrorMessage(subjectInput, "Subject cannot be empty.") : null;
+  
+      // Validate review
+      const reviewError = !reviewInput.value.trim() ? createErrorMessage(reviewInput, "Review cannot be empty.") : null;
+  
+      // Check if there are any errors
+      if (!ratingSelected || !subjectInput.value.trim() || !reviewInput.value.trim()) {
+          console.log("Validation failed");
+          valid = false;
+          e.preventDefault(); // Prevent form submission
+      }
+  
+      // Add event listeners to hide errors when input is changed
+      ratingInputs.forEach(input => {
+          input.addEventListener('change', function () {
+              if (input.checked) {
+                  const errorMessage = input.nextElementSibling;
+                  if (errorMessage && errorMessage.classList.contains("text-danger")) {
+                      errorMessage.remove();
+                  }
+              }
+          });
+      });
+  
+      subjectInput.addEventListener('input', function () {
+          const errorMessage = subjectInput.nextElementSibling;
+          if (subjectInput.value.trim() && errorMessage && errorMessage.classList.contains("text-danger")) {
+              errorMessage.remove();
+          }
+      });
+  
+      reviewInput.addEventListener('input', function () {
+          const errorMessage = reviewInput.nextElementSibling;
+          if (reviewInput.value.trim() && errorMessage && errorMessage.classList.contains("text-danger")) {
+              errorMessage.remove();
+          }
+      });
+  });
+
+   
+});
+
+  $(document).ready(function(){
+    
+    $('.thumb li a').click(function(e){
+      e.preventDefault(); // Optional: prevents default link behavior
+      const url = $(this).attr('href');
+      const mainImage = $('.mainImage img');
+      mainImage.attr('src', url);
+  });
+  });
+
+</script>
+{% endblock %}

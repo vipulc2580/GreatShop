@@ -82,30 +82,40 @@
                     <div class="card-body">
                         <h5 class="fw-bold mb-3">Order Summary</h5>
                         <ul class="list-group list-group-flush mb-3">
-                            <li class="list-group-item d-flex justify-content-between">
+                            <!-- Total Price -->
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <span>Total Price:</span>
                                 <strong>₹{{ subtotal }}</strong>
                             </li>
+                            
+                            <!-- Taxes Loop -->
                             {% for tax_type, value in tax_dict.items %}
                                 {% for tax_percent, amount in value.items %}
-                                    <li class="list-group-item d-flex justify-content-between">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
                                         <span>{{ tax_type }} ({{ tax_percent }}%)</span>
                                         <strong>₹{{ amount }}</strong>
                                     </li>
                                 {% endfor %}
                             {% endfor %}
-                            <li class="list-group-item d-flex justify-content-between bg-light fw-bold">
+                            
+                            <!-- Grand Total -->
+                            <li class="list-group-item d-flex justify-content-between align-items-center bg-light fw-bold">
                                 <span>Total Payable:</span>
                                 <strong>₹{{ grand_total }}</strong>
                             </li>
                         </ul>
+            
+                        <!-- Payment Methods Image -->
                         <div class="text-center mb-3">
                             <img src="{% static './images/misc/payments.png' %}" height="30" alt="Payment Methods">
                         </div>
-                        <div id="paypal-button-container"></div>
+            
+                        <!-- PayPal Button Container -->
+                        <div id="paypal-button-container" class="text-center">
+                            <!-- Add PayPal button here -->
+                        </div>
                     </div>
                 </div>
-            </div>
 
         </div>
     </div>

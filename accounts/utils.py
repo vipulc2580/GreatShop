@@ -14,3 +14,4 @@ def send_notification_email(request,user,mail_subject,htmlfile,context):
     mail = EmailMessage(mail_subject, message,from_email, to=[to_email])
     mail.content_subtype = "html"  # Ensures email is sent as HTML
     mail.send()
+

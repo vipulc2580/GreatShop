@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser,BaseUserManager
-
+from django.core.validators import MaxValueValidator
+from .validators import validate_profile_picture
 class UserManager(BaseUserManager):
 
     def create_user(self,first_name,last_name,username,email,password=None):
@@ -68,4 +69,26 @@ class User(AbstractBaseUser):
 
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
+    
+
+class UserProfile(models.Model):
+
+    user=models.OneToOneField(User, on_delete=models.CASCADE) # similar to foriegn key but its unique in entire table
+    address=models.CharField(max_length=200,blank=True,null=True)
+    profile_picture=models.ImageField(upload_to='userprofile/',blank=True,null=True,validators=[validate_profile_picture])
+    city = models.CharField(max_length=50, blank=True, null=True)
+    state = models.CharField(max_length=50, blank=True, null=True)
+    country = models.CharField(max_length=50, blank=True, null=True)
+    pincode = models.IntegerField(
+        blank=True, null=True,
+        validators=[MaxValueValidator(899999)],
+    )
+
+    class Meta:
+        verbose_name = "UserProfile"
+        verbose_name_plural = "UserProfiles"
+
+    def __str__(self): 
+        return str(self.user)
+
     

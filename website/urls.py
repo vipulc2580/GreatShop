@@ -20,7 +20,10 @@ from . import views
 from django.conf.urls.static import static
 from django.conf import settings
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('secure_login/assign-coupons/',views.assign_coupons,name='admin_assign_coupons'),
+    path('secure_login/', admin.site.urls),
+     # Fake admin login page (honeypot)
+    path('admin/', include('admin_honeypot.urls', namespace='admin_honeypot')),
     path('',views.home,name='home'),
     path('store/',include('store.urls')),
     path('cart/',include('cart.urls')),
