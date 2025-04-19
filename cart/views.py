@@ -1,11 +1,12 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .models import Cart,CartItem
+from .models import Cart,CartItem,Coupon,GeneralCoupon
 from store.models import Product,Variation
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 import json
 from django.contrib.auth.decorators import login_required
 from orders.models import Tax
+
 
 # Create your views here.
 def _cart_id(request):
@@ -160,7 +161,7 @@ def cart(request,quantity=0,total=0,cart_items=None):
 
 def increment_cart_item(request):
     if request.method=='POST':
-          if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             try:
                 data=json.loads(request.body)
                 item_id=data.get('item_id')
@@ -171,7 +172,7 @@ def increment_cart_item(request):
                     cart_item.quantity+=1
                     cart_item.save()
                     cart_amount_detail=get_cart_details(request)
-                   
+                    
                     total=cart_amount_detail.get('grand_total')
                     subtotal=cart_amount_detail.get('subtotal')
                     cgst_amount=cart_amount_detail.get('cgst_amount')
@@ -198,7 +199,7 @@ def increment_cart_item(request):
                 })
             except Exception as e:
                 return JsonResponse({
-                  'status':'Failed',
+                    'status':'Failed',
                     'message':'Bad request'
                 })
     else:
@@ -210,7 +211,7 @@ def increment_cart_item(request):
 
 def decrement_cart_item(request):
     if request.method=='POST':
-          if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             try:
                 data=json.loads(request.body)
                 item_id=data.get('item_id')
@@ -223,7 +224,7 @@ def decrement_cart_item(request):
                     if(cart_item.quantity==0): return remove_cart_item(request)
                     cart_item.save()
                     cart_amount_detail=get_cart_details(request)
-                   
+                    
                     total=cart_amount_detail.get('grand_total')
                     subtotal=cart_amount_detail.get('subtotal')
                     cgst_amount=cart_amount_detail.get('cgst_amount')
@@ -247,7 +248,7 @@ def decrement_cart_item(request):
                 })
             except Exception as e:
                 return JsonResponse({
-                  'status':'Failed',
+                    'status':'Failed',
                     'message':'Bad request'
                 })
     else:
@@ -258,7 +259,7 @@ def decrement_cart_item(request):
 
 def remove_cart_item(request):
     if request.method=='POST':
-          if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             try:
                 data=json.loads(request.body)
                 item_id=data.get('item_id')
@@ -270,7 +271,7 @@ def remove_cart_item(request):
                     # cart_item.quantity=0
                     cart_item.delete()
                     cart_amount_detail=get_cart_details(request)
-                   
+                    
                     total=cart_amount_detail.get('grand_total')
                     subtotal=cart_amount_detail.get('subtotal')
                     cgst_amount=cart_amount_detail.get('cgst_amount')
@@ -295,7 +296,7 @@ def remove_cart_item(request):
                 })
             except Exception as e:
                 return JsonResponse({
-                  'status':'Failed',
+                    'status':'Failed',
                     'message':'Bad request'
                 })
     else:
@@ -306,27 +307,16 @@ def remove_cart_item(request):
 
 
 @login_required(login_url='login')
-def checkout(request,quantity=0,total=0,cart_items=None):
-    if request.method=='POST':
-        print(request.POST)
-    tax,grand_total=0,0
+def checkout(request):
+    cart_items=None
     try:
         cart=Cart.objects.get(cart_id=_cart_id(request))
         cart_items=CartItem.objects.filter(cart=cart,is_active=True)
-        for cart_item in cart_items:
-            total+=(cart_item.quantity*cart_item.product.price)
-            quantity+=(cart_item.quantity)
-        tax=(total*2)/100
-        grand_total=tax+total
     except ObjectDoesNotExist:
         pass
     # print(cart_items)
     context={
         'cart_items':cart_items,
-        'total':total,
-        'quantity':quantity,
-        'grand_total':grand_total,
-        'tax':tax
     }
     return render(request,'store/checkout.html',context)
 
@@ -366,3 +356,16 @@ def get_cart_details(request):
     context={'grand_total':grand_total,'subtotal':subtotal,'cgst_amount':cgst_amount,'sgst_amount':sgst_amount}
     # print(context)
     return context
+
+def get_coupon(request,coupon_code):
+    try:
+        coupon=GeneralCoupon.objects.get(code=coupon_code,is_active=True)
+        return coupon
+    except:
+        print('General Coupon does not exist will check for user specific coupon')
+        try:
+            coupon=Coupon.objects.get(code=coupon_code,user=request.user,used=False)
+            return coupon
+        except:
+            print('No coupons found')
+        return None

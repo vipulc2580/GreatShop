@@ -97,11 +97,16 @@
                                     </li>
                                 {% endfor %}
                             {% endfor %}
-                            
+                            {% if order.discount_amount %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center bg-light fw-bold">
+                                <span>Discount :</span>
+                                <strong>-₹{{ order.discount_amount }}</strong>
+                            </li>
+                            {% endif %}
                             <!-- Grand Total -->
                             <li class="list-group-item d-flex justify-content-between align-items-center bg-light fw-bold">
                                 <span>Total Payable:</span>
-                                <strong>₹{{ grand_total }}</strong>
+                                <strong>₹{{ order.net_total }}</strong>
                             </li>
                         </ul>
             
@@ -135,7 +140,12 @@
         },
         createOrder: function (data, actions) {
             return fetch(create_order_url, {
-                method: 'POST'
+               
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ orderNumber: order_number })
             }).then(res => res.json()).then(orderData => orderData.id);
         },
         onApprove: function (data, actions) {

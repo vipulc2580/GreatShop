@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from django.contrib.messages import constants as messages
 from pathlib import Path
 from decouple import config
 
@@ -26,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('debug',cast=bool)
+DEBUG = config('debug', cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -88,7 +89,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'website.wsgi.application'
 
-AUTH_USER_MODEL='accounts.User'
+AUTH_USER_MODEL = 'accounts.User'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -136,19 +137,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT= BASE_DIR /'static'
-STATICFILES_DIRS=['website/static',]
+STATIC_ROOT = BASE_DIR / 'static'
+STATICFILES_DIRS = ['website/static',]
 
 # Media File Configuration
 MEDIA_URL = '/media/'
-MEDIA_ROOT= BASE_DIR /'media'
+MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-from django.contrib.messages import constants as messages
 
 MESSAGE_TAGS = {
     messages.DEBUG: 'secondary',
@@ -158,21 +157,21 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger',
 }
 # email configuration
-EMAIL_HOST=config('email_host')
-EMAIL_PORT=config('email_port',cast=int)
-EMAIL_HOST_USER=config('email_user')
-EMAIL_HOST_PASSWORD=config('email_passkey')
-EMAIL_USE_TLS=config('email_use_tls',cast=bool)
-DEFAULT_FROM_EMAIL=config('default_from_email')
+EMAIL_HOST = config('email_host')
+EMAIL_PORT = config('email_port', cast=int)
+EMAIL_HOST_USER = config('email_user')
+EMAIL_HOST_PASSWORD = config('email_passkey')
+EMAIL_USE_TLS = config('email_use_tls', cast=bool)
+DEFAULT_FROM_EMAIL = config('default_from_email')
 
 PASSWORD_RESET_TIMEOUT = 900
 
 # paypal integrations
-PAYPAL_CLIENT_ID=config('paypal_client_id')
-PAYPAL_SECRET_KEY=config('paypal_secret_key')
+PAYPAL_CLIENT_ID = config('paypal_client_id')
+PAYPAL_SECRET_KEY = config('paypal_secret_key')
 PAYPAL_MODE = "sandbox"
 
 
-GOOGLE_API_KEY=config('google_api_key')
+GOOGLE_API_KEY = config('google_api_key')
 # print(GOOGLE_API_KEY)
-SECURE_CROSS_ORIGIN_OPENER_POLICY='same-origin-allow-popups'
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin-allow-popups'

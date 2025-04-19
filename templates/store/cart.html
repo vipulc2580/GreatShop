@@ -168,7 +168,7 @@
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <dl class="dlist-align">
-                            <dt>Total price:</dt>
+                            <dt>SubTotal:</dt>
                             <dd class="text-right" id='subtotal'>{{subtotal}}</dd>
                         </dl>
                         {% for tax_type,value in tax_dict.items %}
@@ -185,9 +185,12 @@
                             <dd class="text-right text-dark fw-bold"><strong id='total'>{{grand_total}}</strong></dd>
                         </dl>
                         <hr>
+                        <!--
                         <div class="text-center mb-3">
                             <img src="{% static './images/misc/payments.png' %}" height="26" alt="Payment Methods">
                         </div>
+                    -->
+                        
                         <a href="{% url 'checkout'%}" class="btn btn-primary btn-block mb-2">Checkout</a>
                         <a href="{% url 'store' %}" class="btn btn-light btn-block">Continue Shopping</a>
                     </div>
@@ -211,7 +214,6 @@
 <script>
     function updateCartCounter(val){
         const cartCounters = document.querySelectorAll('.cart-counter');
-        console.log(cartCounters);
         for(let i=0;i<cartCounters.length;i++){
             let counter=cartCounters[i];
             let current_qty = Number(counter.textContent.trim());
@@ -234,8 +236,6 @@
         .then(data => {
             if (data.status=='Success') {
                 let qtys=document.querySelectorAll('.item-'+itemId);
-                console.log(qtys);
-                console.log('hi');
                 for(let i=0;i<qtys.length;i++){
                     let qty=qtys[i];
                     qty.value=data.current_quantity;

@@ -14,6 +14,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='userprofile',
             name='profile_picture',
-            field=models.ImageField(blank=True, null=True, upload_to='userprofile/', validators=[accounts.validators.validate_profile_picture]),
+            field=models.ImageField(
+                blank=True,
+                null=True,
+                upload_to='userprofile/',
+                validators=[
+                    accounts.validators.validate_profile_picture]),
         ),
     ]

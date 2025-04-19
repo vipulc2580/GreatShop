@@ -1,13 +1,14 @@
-from django import forms 
+from django import forms
 from django.core.exceptions import ValidationError
 import csv
 
+
 class CouponForm(forms.Form):
-    csv_file=forms.FileField(required=True)
-    email_subject=forms.CharField(max_length=255, required=True)
-    code=forms.CharField(max_length=20,required=True)
-    discount=forms.IntegerField(min_value=1,max_value=60,required=True)
-    validity_days=forms.IntegerField(required=True,min_value=1)
+    csv_file = forms.FileField(required=True)
+    email_subject = forms.CharField(max_length=255, required=True)
+    code = forms.CharField(max_length=20, required=True)
+    discount = forms.IntegerField(min_value=1, max_value=60, required=True)
+    validity_days = forms.IntegerField(required=True, min_value=1)
 
     def clean_csv_file(self):
         file = self.cleaned_data.get('csv_file')
@@ -29,7 +30,8 @@ class CouponForm(forms.Form):
             # Example: Expecting 1 column with User IDs
             for i, row in enumerate(rows):
                 if len(row) != 1:
-                    raise ValidationError(f"Row {i+1} is malformed. Expected 1 column, got {len(row)}.")
+                    raise ValidationError(
+                        f"Row {i+1} is malformed. Expected 1 column, got {len(row)}.")
 
         except Exception as e:
             raise ValidationError(f"Error processing CSV file: {str(e)}")

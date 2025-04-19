@@ -129,7 +129,10 @@
             <tr><td class="summary-row">{{ tax }} <small>({{ i }}%)</small>: &nbsp;{{ j }}</td></tr>
           {% endfor %}
         {% endfor %}
-        <tr><td class="summary-row">Grand Total: &nbsp;{{ order.order_total }}</td></tr>
+        {% if order.discount_amount %}
+        <tr><td class="summary-row">Discount: &nbsp;-{{ order.discount_amount }}</td></tr>
+        {% endif %}
+        <tr><td class="summary-row">Grand Total: &nbsp;{{ order.net_total }}</td></tr>
       </tbody>
     </table>
   </div>

@@ -14,11 +14,28 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Category',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, unique=True)),
-                ('category_slug', models.CharField(max_length=100, unique=True)),
-                ('description', models.TextField(blank=True, max_length=255)),
-                ('cat_image', models.ImageField(blank=True, upload_to='photos/category')),
+                ('id',
+                 models.BigAutoField(
+                     auto_created=True,
+                     primary_key=True,
+                     serialize=False,
+                     verbose_name='ID')),
+                ('name',
+                 models.CharField(
+                     max_length=50,
+                     unique=True)),
+                ('category_slug',
+                 models.CharField(
+                     max_length=100,
+                     unique=True)),
+                ('description',
+                 models.TextField(
+                     blank=True,
+                     max_length=255)),
+                ('cat_image',
+                 models.ImageField(
+                     blank=True,
+                     upload_to='photos/category')),
             ],
             options={
                 'verbose_name': 'Category',

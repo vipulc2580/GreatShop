@@ -12,28 +12,14 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name='userprofile',
-            name='address',
-            field=models.CharField(blank=True, max_length=200, null=True),
-        ),
-        migrations.AlterField(
-            model_name='userprofile',
-            name='city',
-            field=models.CharField(blank=True, max_length=50, null=True),
-        ),
-        migrations.AlterField(
-            model_name='userprofile',
-            name='country',
-            field=models.CharField(blank=True, max_length=50, null=True),
-        ),
-        migrations.AlterField(
-            model_name='userprofile',
-            name='pincode',
-            field=models.IntegerField(blank=True, null=True, validators=[django.core.validators.MaxValueValidator(899999)]),
-        ),
-        migrations.AlterField(
-            model_name='userprofile',
-            name='state',
-            field=models.CharField(blank=True, max_length=50, null=True),
-        ),
-    ]
+            model_name='userprofile', name='address', field=models.CharField(
+                blank=True, max_length=200, null=True), ), migrations.AlterField(
+            model_name='userprofile', name='city', field=models.CharField(
+                blank=True, max_length=50, null=True), ), migrations.AlterField(
+            model_name='userprofile', name='country', field=models.CharField(
+                blank=True, max_length=50, null=True), ), migrations.AlterField(
+            model_name='userprofile', name='pincode', field=models.IntegerField(
+                blank=True, null=True, validators=[
+                    django.core.validators.MaxValueValidator(899999)]), ), migrations.AlterField(
+            model_name='userprofile', name='state', field=models.CharField(
+                blank=True, max_length=50, null=True), ), ]

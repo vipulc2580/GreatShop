@@ -39,7 +39,7 @@
                                   </th>
                                   <td>{{ order.full_name }}</td>
                                   <td>{{ order.phone_number }}</td>
-                                  <td>₹{{ order.order_total }}</td>
+                                  <td>₹{{ order.net_total }}</td>
                                   <td>{{ order.created_at|date:"d.m.Y" }}</td>
                                 </tr>
                                 {% endfor %}

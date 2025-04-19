@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 {% load static %}
 {% load mathfilters %}
+{% block style %}
+<style>
+    .swal2-popup-custom {
+        font-size: 1.1rem;
+        border: 2px solid #28a745;
+    }
+</style>
+{% endblock style %}
 {% block content %}
 
 <section class="section-content py-5 bg-light">
@@ -74,6 +82,7 @@
                                 <label class="form-label">Order Notes <small class="text-muted">(Optional)</small></label>
                                 <textarea name="order_note" rows="3" class="form-control"></textarea>
                             </div>
+                            <input type="hidden" name="coupon_code" id="couponCodeHidden" value="">
                     </div>
                 </div>
             </div>
@@ -118,11 +127,45 @@
                                 </tbody>
                             </table>
                         </div>
-                        <hr>
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">Place Order</button>
-                            <a href="{% url 'store' %}" class="btn btn-outline-secondary">Continue Shopping</a>
+                        
+                        <div class="card">
+                            <div class="card-body">
+                                <dl class="dlist-align">
+                                    <dt>Total price:</dt>
+                                    <dd class="text-right" id='subtotal'>{{subtotal}}</dd>
+                                </dl>
+                                {% for tax_type,value in tax_dict.items %}
+                                    {% for tax_percent,amount in value.items %}
+                                        <dl class="dlist-align">
+                                            <dt>{{tax_type}}:&nbsp;({{tax_percent}}%)</dt>
+                                            <dd class="text-right" id="{{tax_type|lower}}">{{amount}}</dd>
+                                        </dl>
+                                    {% endfor %}
+                                {% endfor %}
+                                
+                                <dl class="dlist-align" id='disp_total'>
+                                    <dt>Total:</dt>
+                                    <dd class="text-right text-dark fw-bold"><strong id='total'>{{grand_total}}</strong></dd>
+                                </dl>
+                                <hr>
+                                <div class="text-center mb-3">
+                                    <img src="{% static './images/misc/payments.png' %}" height="26" alt="Payment Methods">
+                                </div>
+                                <div id="coupon-section" class="mb-4">
+                                    <label for="coupon-input" class="form-label">Have a coupon?</label>
+                                    <div class="input-group">
+                                      <input type="text" id="coupon-input" class="form-control" placeholder="Enter coupon code">
+                                      <button type="button" id="coupon-btn" class="btn btn-outline-success">Apply Coupon</button>
+                                    </div>
+                                    <div id="coupon-error" class="text-danger mt-2" style="display: none;"></div>
+                                  </div>
+                                <div class="d-grid gap-2 mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg">Place Order</button>
+                                    <a href="{% url 'store' %}" class="btn btn-outline-secondary">Continue Shopping</a>
+                                </div>
+                            </div>
                         </div>
+                        
                         </form>
                     </div>
                 </div>
@@ -131,5 +174,129 @@
         </div>
     </div>
 </section>
-
+<script>
+    const couponInput = document.getElementById('coupon-input');
+    const couponBtn = document.getElementById('coupon-btn');
+    const couponError = document.getElementById('coupon-error');
+    const apply_coupon_url="{% url 'apply_coupon'%}";
+    const total=document.getElementById('total')   
+    let couponApplied = false;
+    const orderTotal={{grand_total}}
+    const hiddenInput=document.getElementById('couponCodeHidden');
+  
+    // Toggle apply/remove
+    couponBtn.addEventListener('click', () => {
+      const code = couponInput.value.trim();
+      
+      if (!couponApplied) {
+        if (!code) {
+          showError("Please enter a coupon code.");
+          return;
+        }
+        // Replace with your actual API endpoint or check logic
+        fetch(apply_coupon_url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+             'X-CSRFToken': getCSRFToken(),
+             'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify({ coupon: code})
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status=='Success') {
+            couponApplied = true;
+            showDiscount(data.discount_amount);
+            hiddenInput.value=code;
+            console.log(hiddenInput.value);
+            couponInput.disabled = true;
+            couponBtn.textContent = '✕';  // Remove button
+            couponBtn.classList.remove('btn-outline-success');
+            couponBtn.classList.add('btn-outline-danger');
+            Swal.fire({
+                title: '🎉 Congratulations!',
+                html: `<p>You saved <strong>₹${data.discount_amount}</strong> on your order!</p>`,
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+                background: '#f0fff4',
+                customClass: {
+                    title: 'swal2-title',
+                    popup: 'swal2-popup-custom',
+                },
+            });
+            hideError();
+          } else if(data.status=='Failed') {
+            showError(data.error || "Invalid or expired coupon.");
+          }
+        })
+        .catch(() => showError("Something went wrong. Please try again."));
+      } else {
+        // Remove coupon
+        hiddenInput.value=''
+        removeDiscount();
+        couponApplied = false;
+        couponInput.disabled = false;
+        couponInput.value = '';
+        couponBtn.textContent = 'Apply Coupon';
+        couponBtn.classList.remove('btn-outline-danger');
+        couponBtn.classList.add('btn-outline-success');
+        hideError();
+  
+        // Optional: hit remove coupon endpoint
+        
+        
+      }
+    });
+    function showDiscount(amount) {
+        // Check if already exists
+        if (!document.getElementById('discount_line')) {
+            const discountLine = document.createElement('dl');
+            discountLine.className = 'dlist-align';
+            discountLine.id = 'discount_line';
+            discountLine.innerHTML = `
+                <dt>Discount:</dt>
+                <dd class="text-right text-success fw-bold" id="discount">- ₹${amount}</dd>
+            `;
+            
+            const dispTotal = document.getElementById('disp_total');
+            total.innerHTML = (Number(total.innerHTML) - amount).toFixed(2);
+            dispTotal.parentNode.insertBefore(discountLine, dispTotal);
+        }
+    }
+    function removeDiscount() {
+        const discountLine = document.getElementById('discount_line');
+        total.innerHTML=orderTotal;
+        if (discountLine) {
+            discountLine.remove();
+        }
+    }
+    // Clear error when typing
+    couponInput.addEventListener('input', () => {
+      hideError();
+    });
+  
+    function showError(message) {
+      couponError.textContent = message;
+      couponError.style.display = 'block';
+    }
+  
+    function hideError() {
+      couponError.textContent = '';
+      couponError.style.display = 'none';
+    }
+    function getCSRFToken() {
+        const name = 'csrftoken';
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            let c = cookies[i].trim();
+            if (c.startsWith(name + '=')) {
+                return c.substring(name.length + 1);
+            }
+        }
+        return '';
+    } 
+  </script>
 {% endblock content %}

@@ -13,6 +13,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='order',
             name='tax_data',
-            field=models.JSONField(blank=True, help_text="Data format: {'tax_type':{'tax_percentage':'tax_amount'}}", null=True),
+            field=models.JSONField(
+                blank=True,
+                help_text="Data format: {'tax_type':{'tax_percentage':'tax_amount'}}",
+                null=True),
         ),
     ]
