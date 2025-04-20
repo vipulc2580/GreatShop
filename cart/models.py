@@ -95,3 +95,5 @@ class GeneralCoupon(models.Model):
     def get_discount_amount(self, amount):
         discount_amount = float(amount * (self.discount_percent / 100))
         return round(discount_amount, 2)
+
+    

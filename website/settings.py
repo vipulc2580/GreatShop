@@ -175,3 +175,16 @@ PAYPAL_MODE = "sandbox"
 GOOGLE_API_KEY = config('google_api_key')
 # print(GOOGLE_API_KEY)
 SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin-allow-popups'
+
+
+# Redis as the broker
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+
+# Optional: store task results
+CELERY_RESULT_BACKEND = 'django-db'
+INSTALLED_APPS += ['django_celery_results']
+
+# Optional: timezone settings
+CELERY_TIMEZONE = 'UTC'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 mins

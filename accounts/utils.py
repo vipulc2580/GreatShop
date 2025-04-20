@@ -1,6 +1,7 @@
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.conf import settings
+from .models import User
 
 
 def send_notification_email(request, user, mail_subject, htmlfile, context):
@@ -14,3 +15,4 @@ def send_notification_email(request, user, mail_subject, htmlfile, context):
     mail = EmailMessage(mail_subject, message, from_email, to=[to_email])
     mail.content_subtype = "html"  # Ensures email is sent as HTML
     mail.send()
+
